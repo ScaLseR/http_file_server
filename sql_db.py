@@ -1,6 +1,6 @@
 """работа с БД sqlite3"""
 import sqlite3
-from datetime import datetime
+import datetime
 
 
 class SqlStorage:
@@ -14,8 +14,8 @@ class SqlStorage:
     def _cr_table(self):
         """если таблицы нет - создаем, если уже есть то пропускаем"""
         cursor = self._connection.cursor()
-        cursor.execute('create table if not exists fileserver(date '
-                       'text, price real, unique(date))')
+        cursor.execute('create table if not exists fileserver(id int, name text, '
+                       'tag text, size real, mimeType text, modificationTime real , unique(id))')
         self._connection.commit()
 
     def save_to_db(self, data: dict):
