@@ -14,16 +14,16 @@ class SqlStorage:
     def _cr_table(self):
         """если таблицы нет - создаем, если уже есть то пропускаем"""
         cursor = self._connection.cursor()
-        cursor.execute('create table if not exists fileserver(id int, name text, '
-                       'tag text, size real, mimeType text, modificationTime real , unique(id))')
+        cursor.execute('create table if not exists fileserver(id text, name text, '
+                       'tag text, size int, mimeType text, location text, modificationTime text , unique(id))')
         self._connection.commit()
 
-    def save_to_db(self, data: dict):
+    def save_to_db(self, ids: str, name: str, tag: str, size: int, mime_type: str, modification_time: str):
         """сохраняем в базу параметры файла"""
         cursor = self._connection.cursor()
-        for key, value in data.items():
-            cursor.execute('insert or ignore into historydata(date, price) values (?, ?)',
-                           (key, value))
+        cursor.execute('insert into fileserver(id, name, tag, size, mimeType, '
+                       'location, modificationTime) values (?, ?, ?, ?, ?, ?, ?)',
+                       (ids, name, tag, size, mime_type, '/', modification_time))
         self._connection.commit()
 
     def load_from_db(self, **kwargs) -> dict:
@@ -32,11 +32,7 @@ class SqlStorage:
             cursor = self._connection.cursor()
             cursor.execute("select * from fileserver")
             result = cursor.fetchall()
-            print(result)
             self._connection.commit()
-            data_dict = {}
-        #   for data in result:
-        #         data_dict[data[0]] = data[1]
         else:
-            pass
-        return data_dict
+            result = kwargs
+        return result
