@@ -15,15 +15,15 @@ class SqlStorage:
         """если таблицы нет - создаем, если уже есть то пропускаем"""
         cursor = self._connection.cursor()
         cursor.execute('create table if not exists fileserver(id text, name text, '
-                       'tag text, size int, mimeType text, location text, modificationTime text , unique(id))')
+                       'tag text, size int, mimeType text, modificationTime text , unique(id))')
         self._connection.commit()
 
     def save_to_db(self, ids: str, name: str, tag: str, size: int, mime_type: str, modification_time: str):
         """сохраняем в базу параметры файла"""
         cursor = self._connection.cursor()
-        cursor.execute('insert into fileserver(id, name, tag, size, mimeType, '
-                       'location, modificationTime) values (?, ?, ?, ?, ?, ?, ?)',
-                       (ids, name, tag, size, mime_type, '/', modification_time))
+        cursor.execute('insert into fileserver(id, name, tag, size, mimeType,'
+                       ' modificationTime) values (?, ?, ?, ?, ?, ?)',
+                       (ids, name, tag, size, mime_type, modification_time))
         self._connection.commit()
 
     def load_from_db(self, **kwargs) -> dict:
@@ -34,5 +34,11 @@ class SqlStorage:
             result = cursor.fetchall()
             self._connection.commit()
         else:
-            result = kwargs
+            print(kwargs)
+            if len(kwargs) == 1:
+                if type(kwargs['id']) == str:
+                    cursor = self._connection.cursor()
+                    cursor.execute("select * from fileserver where id =" + "'" + kwargs['id'] + "'")
+                    result = cursor.fetchall()
+                    self._connection.commit()
         return result
