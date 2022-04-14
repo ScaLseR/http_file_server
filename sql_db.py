@@ -1,6 +1,5 @@
 """работа с БД sqlite3"""
 import sqlite3
-import datetime
 
 
 class SqlStorage:
@@ -18,7 +17,8 @@ class SqlStorage:
                        'tag text, size int, mimeType text, modificationTime text , unique(id))')
         self._connection.commit()
 
-    def save_to_db(self, ids: str, name: str, tag: str, size: int, mime_type: str, modification_time: str):
+    def save_to_db(self, ids: str, name: str, tag: str, size: int,
+                   mime_type: str, modification_time: str):
         """сохраняем в базу параметры файла"""
         cursor = self._connection.cursor()
         cursor.execute('insert into fileserver(id, name, tag, size, mimeType,'
@@ -26,17 +26,28 @@ class SqlStorage:
                        (ids, name, tag, size, mime_type, modification_time))
         self._connection.commit()
 
+    def update_to_db(self, ids: str, name: str, tag: str, size: int,
+                     mime_type: str, modification_time: str):
+        """update если в базе уже есть такой файл"""
+        cursor = self._connection.cursor()
+        cursor.execute("update fileserver set (name, tag, size, mimeType, "
+                       "modificationTime) values (?, ?, ?, ?, ?) where id=" + "'" + ids + "'", (name,
+                                                                                                tag, size, mime_type,
+                                                                                                modification_time))
+        self._connection.commit()
+
     def load_from_db(self, **kwargs) -> dict:
         """получаем из базы файлы соответствующие условиям"""
         if len(kwargs) == 0:
+            #если в запросе нет параметров возвращаем все значения из таблицы
             cursor = self._connection.cursor()
             cursor.execute("select * from fileserver")
             result = cursor.fetchall()
             self._connection.commit()
         else:
-            print(kwargs)
             if len(kwargs) == 1:
-                if type(kwargs['id']) == str:
+                #если у нас в запросе только 1 id(download, upload)
+                if isinstance(kwargs['id'], str):
                     cursor = self._connection.cursor()
                     cursor.execute("select * from fileserver where id =" + "'" + kwargs['id'] + "'")
                     result = cursor.fetchall()

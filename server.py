@@ -1,11 +1,11 @@
 """HTTP server"""
 import json
-from http.server import BaseHTTPRequestHandler, HTTPServer
-from urllib.parse import parse_qs, urlparse
-from sql_db import SqlStorage
-from datetime import datetime
 import uuid
 import os
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from urllib.parse import parse_qs, urlparse
+from datetime import datetime
+from sql_db import SqlStorage
 
 
 class ApiEndpoint(BaseHTTPRequestHandler):
@@ -53,13 +53,8 @@ class ApiEndpoint(BaseHTTPRequestHandler):
     def _create_dict(data: list) -> list:
         main_list = []
         for part in data:
-            part_dict = {}
-            part_dict['id'] = part[0]
-            part_dict['name'] = part[1]
-            part_dict['tag'] = part[2]
-            part_dict['size'] = part[3]
-            part_dict['mimeType'] = part[4]
-            part_dict['modificationTime'] = part[5]
+            part_dict = {'id': part[0], 'name': part[1], 'tag': part[2], 'size': part[3], 'mimeType': part[4],
+                         'modificationTime': part[5]}
             main_list.append(part_dict)
         return main_list
 
@@ -81,17 +76,22 @@ class ApiEndpoint(BaseHTTPRequestHandler):
                 self.wfile.write('отсутствуют уловия'.encode('utf-8'))
             else:
                 data = storage.load_from_db(id=params['id'][0])
+                #если файла с заданным id нет в базе
                 if len(data) == 0:
                     self._set_headers(404)
                     self.wfile.write('файл не существует'.encode('utf-8'))
+                #файл с заданным id присутствует в базе
                 else:
                     body = self._load_file_from_disk(data[0][0])
                     self._set_headers(200)
-
+                    self.wfile.write(body)
 
     def do_POST(self):
         """отработка запросов POST на ендпоинт /api/upload"""
         storage = SqlStorage('file_server')
+        upd = False
+        name = ''
+        tag = ''
         if self.path.startswith('/api/upload'):
             params = parse_qs(urlparse(self.path).query)
             #проверка условий и наличия пареметров в запросе
@@ -99,14 +99,21 @@ class ApiEndpoint(BaseHTTPRequestHandler):
                 ids = str(uuid.uuid4())
             else:
                 ids = params['id'][0]
-            if not params.get('name'):
-                name = ids
-            else:
-                name = params['name'][0]
-            if not params.get('tag'):
-                tag = ''
-            else:
-                tag = params['tag'][0]
+                _rez = storage.load_from_db(id=ids)
+                print(_rez)
+                if len(_rez) != 0:
+                    name = _rez[0][1]
+                    tag = _rez[0][2]
+                    upd = True
+                else:
+                    if not params.get('name'):
+                        name = ids
+                    else:
+                        name = params['name'][0]
+                    if not params.get('tag'):
+                        tag = ''
+                    else:
+                        tag = params['tag'][0]
             if not params.get('Content-Type'):
                 mime_type = self.headers.get('content-type')
             else:
@@ -114,10 +121,13 @@ class ApiEndpoint(BaseHTTPRequestHandler):
             content_size = int(self.headers.get('content-length'))
             modification_time = self._date_time_str()
             #сохраняем все параметры загруженного файла в базу
-            storage.save_to_db(ids, name, tag, content_size, mime_type, modification_time)
+            if upd:
+                storage.update_to_db(ids, name, tag, content_size, mime_type, modification_time)
+            else:
+                storage.save_to_db(ids, name, tag, content_size, mime_type, modification_time)
             #получаем тело файла и сохраняем на диск
             post_body = self.rfile.read(content_size)
-            self._save_file_to_disk(name, post_body)
+            self._save_file_to_disk(ids, post_body)
             #создаем json обьект и возвращаем клиенту
             rez = storage.load_from_db(id=ids)
             time_dict = self._create_dict(rez)
@@ -139,6 +149,7 @@ class ApiEndpoint(BaseHTTPRequestHandler):
 
 
 def run(ip_addr: str, port: int):
+    """запуск сервера с переданными параметрами"""
     server = HTTPServer((ip_addr, port), ApiEndpoint)
     server.serve_forever()
 
