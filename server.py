@@ -24,10 +24,17 @@ class ApiEndpoint(BaseHTTPRequestHandler):
         return now.strftime("%Y-%m-%d %H:%M:%S")
 
     @staticmethod
-    def _create_json(data: dict):
+    def _create_json(data: dict) -> json:
+        """создание обьекта json из словаря"""
         str_json = json.dumps(data)
         print('str_json= ', str_json)
         return str_json
+
+    @staticmethod
+    def _save_file_to_disk(name: str, body: bytes) -> None:
+        """запись файла на диск"""
+        with open(name, mode="wb") as file:
+            file.write(body)
 
     def do_GET(self):
         """отработка запросов GET на ендпоинты /api/get и /api/download"""
@@ -76,7 +83,7 @@ class ApiEndpoint(BaseHTTPRequestHandler):
             storage.save_to_db(ids, name, tag, content_size, mime_type, modification_time)
             rez_json = self._create_json(time_dict)
             post_body = self.rfile.read(content_size)
-            print(post_body)
+            self._save_file_to_disk(name, post_body)
             self._set_headers(201)
             self.wfile.write(rez_json.encode('utf-8'))
 
