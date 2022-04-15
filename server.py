@@ -2,6 +2,7 @@
 import json
 import uuid
 import os
+import requests
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
 from datetime import datetime
@@ -93,12 +94,14 @@ class ApiEndpoint(BaseHTTPRequestHandler):
                     self.wfile.write('файл не существует'.encode('utf-8'))
                 #файл с заданным id присутствует в базе, возвращаем файл клиенту
                 else:
-                    body = self._load_file_from_disk(data[0][0])
-                    self._set_headers(200)
-                    self.send_header("Content-type", data[0][4])
-                    self.send_header("Content-length", data[0][3])
+                    self.send_response(200)
+                    self.send_header('Content-type', data[0][4])
+                    self.send_header('Content-Disposition: attachment; filename=', data[0][1])
+                    self.send_header('Content-length', data[0][3])
                     self.end_headers()
+                    body = self._load_file_from_disk(data[0][0])
                     self.wfile.write(body)
+                    print('файл ' + data[0][1] + ' отправлен')
 
     def do_POST(self):#pylint: disable=invalid-name, too-many-locals
         """отработка запросов POST на ендпоинт /api/upload"""
