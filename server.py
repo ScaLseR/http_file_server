@@ -66,7 +66,13 @@ class ApiEndpoint(BaseHTTPRequestHandler):
             params = parse_qs(urlparse(self.path).query)
             #если нет параметров то выводим все файлы
             if len(params) == 0:
-                rez = storage.load_from_db()
+                rez = storage.load_from_db({})
+                rez_list = self._create_dict(rez)
+                self._set_headers(200)
+                rez_json = self._create_json(rez_list)
+                self.wfile.write(rez_json.encode('utf-8'))
+            else:
+                rez = storage.load_from_db(params)
                 rez_list = self._create_dict(rez)
                 self._set_headers(200)
                 rez_json = self._create_json(rez_list)
@@ -79,7 +85,8 @@ class ApiEndpoint(BaseHTTPRequestHandler):
                 self._set_headers(400)
                 self.wfile.write('отсутствуют уловия'.encode('utf-8'))
             else:
-                data = storage.load_from_db(id=params['id'][0])
+                find = {'id': [params['id'][0]]}
+                data = storage.load_from_db(find)
                 #если файла с заданным id нет в базе
                 if len(data) == 0:
                     self._set_headers(404)
@@ -88,6 +95,9 @@ class ApiEndpoint(BaseHTTPRequestHandler):
                 else:
                     body = self._load_file_from_disk(data[0][0])
                     self._set_headers(200)
+                    self.send_header("Content-type", data[0][4])
+                    self.send_header("Content-length", data[0][3])
+                    self.end_headers()
                     self.wfile.write(body)
 
     def do_POST(self):
@@ -101,7 +111,8 @@ class ApiEndpoint(BaseHTTPRequestHandler):
                 ids = str(uuid.uuid4())
             else:
                 ids = params['id'][0]
-                _rez = storage.load_from_db(id=ids)
+                find = {'id': [ids]}
+                _rez = storage.load_from_db(find)
                 if len(_rez) != 0:
                     name = _rez[0][1]
                     tag = _rez[0][2]
@@ -129,7 +140,8 @@ class ApiEndpoint(BaseHTTPRequestHandler):
             post_body = self.rfile.read(content_size)
             self._save_file_to_disk(ids, post_body)
             #создаем json обьект и возвращаем клиенту
-            rez = storage.load_from_db(id=ids)
+            find = {'id': [ids]}
+            rez = storage.load_from_db(find)
             time_dict = self._create_dict(rez)
             rez_json = self._create_json(time_dict)
             self._set_headers(201)
@@ -144,16 +156,18 @@ class ApiEndpoint(BaseHTTPRequestHandler):
                 self._set_headers(400)
                 self.wfile.write('отсутствуют условия'.encode('utf-8'))
             else:
-                #ids = params['id'][0]
-                print(params)
                 rez = storage.load_from_db(params)
                 if len(rez) == 0:
                     self._set_headers(404)
                     self.wfile.write('файл не найден'.encode('utf-8'))
                 else:
-                    print(rez)
+                    count = 0
+                    for part in rez:
+                        storage.del_from_db(id=part[0])
+                        self._delete_file_from_disk(part[0])
+                        count += 1
                     self._set_headers(200)
-                    self.wfile.write('X files deleted'.encode('utf-8'))
+                    self.wfile.write((str(count) + ' files deleted').encode('utf-8'))
 
 
 def run(ip_addr: str, port: int):
