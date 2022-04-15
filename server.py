@@ -53,12 +53,12 @@ class ApiEndpoint(BaseHTTPRequestHandler):
     def _create_dict(data: list) -> list:
         main_list = []
         for part in data:
-            part_dict = {'id': part[0], 'name': part[1], 'tag': part[2], 'size': part[3], 'mimeType': part[4],
-                         'modificationTime': part[5]}
+            part_dict = {'id': part[0], 'name': part[1], 'tag': part[2],
+                         'size': part[3], 'mimeType': part[4], 'modificationTime': part[5]}
             main_list.append(part_dict)
         return main_list
 
-    def do_GET(self):
+    def do_GET(self):#pylint: disable=invalid-name
         """отработка запросов GET на ендпоинты /api/get и /api/download"""
         storage = SqlStorage('file_server')
         #обрабатываем api/get
@@ -100,7 +100,7 @@ class ApiEndpoint(BaseHTTPRequestHandler):
                     self.end_headers()
                     self.wfile.write(body)
 
-    def do_POST(self):
+    def do_POST(self):#pylint: disable=invalid-name, too-many-locals
         """отработка запросов POST на ендпоинт /api/upload"""
         storage = SqlStorage('file_server')
         upd = False
@@ -147,7 +147,7 @@ class ApiEndpoint(BaseHTTPRequestHandler):
             self._set_headers(201)
             self.wfile.write(rez_json.encode('utf-8'))
 
-    def do_DELETE(self):
+    def do_DELETE(self):#pylint: disable=invalid-name
         """отработка ёзапроса DELETE на ендпоинт /api/delete"""
         storage = SqlStorage('file_server')
         if self.path.startswith('/api/delete'):
