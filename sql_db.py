@@ -34,7 +34,7 @@ class SqlStorage:
         rez_str = rez_str[5:]
         return rez_str
 
-    def save_to_db(self, ids: str, name: str, tag: str, size: int,
+    def save_to_db(self, ids: str, name: str, tag: str, size: int,#pylint: disable=too-many-arguments
                    mime_type: str, modification_time: str) -> None:
         """сохраняем в базу параметры файла"""
         cursor = self._connection.cursor()
@@ -43,7 +43,7 @@ class SqlStorage:
                        (ids, name, tag, size, mime_type, modification_time))
         self._connection.commit()
 
-    def update_to_db(self, ids: str, name: str, tag: str, size: int,
+    def update_to_db(self, ids: str, name: str, tag: str, size: int,#pylint: disable=too-many-arguments
                      mime_type: str, modification_time: str) -> None:
         """update если в базе уже есть такой файл"""
         cursor = self._connection.cursor()
@@ -54,7 +54,6 @@ class SqlStorage:
 
     def load_from_db(self, data: dict) -> list:
         """получаем из базы файлы соответствующие условиям"""
-        print(data)
         if len(data) == 0:
             #если в запросе нет параметров возвращаем все значения из таблицы
             cursor = self._connection.cursor()
@@ -64,11 +63,9 @@ class SqlStorage:
             return result
         #если получили параметры в словаре
         find_data = self._gef_find_string(data)
-        print("select * from fileserver where " + find_data)
         cursor = self._connection.cursor()
         cursor.execute("select * from fileserver where " + find_data)
         result = cursor.fetchall()
-        print(result)
         self._connection.commit()
         return result
 
