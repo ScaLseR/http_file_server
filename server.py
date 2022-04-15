@@ -24,7 +24,7 @@ class ApiEndpoint(BaseHTTPRequestHandler):
         return now.strftime("%Y-%m-%d %H:%M:%S")
 
     @staticmethod
-    def _create_json(data: dict) -> json:
+    def _create_json(data: list) -> json:
         """создание обьекта json из словаря"""
         str_json = json.dumps(data, indent=2)
         return str_json
@@ -61,16 +61,20 @@ class ApiEndpoint(BaseHTTPRequestHandler):
     def do_GET(self):
         """отработка запросов GET на ендпоинты /api/get и /api/download"""
         storage = SqlStorage('file_server')
+        #обрабатываем api/get
         if self.path.startswith('/api/get'):
             params = parse_qs(urlparse(self.path).query)
+            #если нет параметров то выводим все файлы
             if len(params) == 0:
                 rez = storage.load_from_db()
                 rez_list = self._create_dict(rez)
                 self._set_headers(200)
                 rez_json = self._create_json(rez_list)
                 self.wfile.write(rez_json.encode('utf-8'))
+        # обрабатываем api/download
         if self.path.startswith('/api/download'):
             params = parse_qs(urlparse(self.path).query)
+            #если нет параметров выводим 400 ошибку
             if len(params) == 0:
                 self._set_headers(400)
                 self.wfile.write('отсутствуют уловия'.encode('utf-8'))
@@ -80,7 +84,7 @@ class ApiEndpoint(BaseHTTPRequestHandler):
                 if len(data) == 0:
                     self._set_headers(404)
                     self.wfile.write('файл не существует'.encode('utf-8'))
-                #файл с заданным id присутствует в базе
+                #файл с заданным id присутствует в базе, возвращаем файл клиенту
                 else:
                     body = self._load_file_from_disk(data[0][0])
                     self._set_headers(200)
@@ -90,8 +94,6 @@ class ApiEndpoint(BaseHTTPRequestHandler):
         """отработка запросов POST на ендпоинт /api/upload"""
         storage = SqlStorage('file_server')
         upd = False
-        name = ''
-        tag = ''
         if self.path.startswith('/api/upload'):
             params = parse_qs(urlparse(self.path).query)
             #проверка условий и наличия пареметров в запросе
@@ -100,20 +102,18 @@ class ApiEndpoint(BaseHTTPRequestHandler):
             else:
                 ids = params['id'][0]
                 _rez = storage.load_from_db(id=ids)
-                print(_rez)
                 if len(_rez) != 0:
                     name = _rez[0][1]
                     tag = _rez[0][2]
                     upd = True
-                else:
-                    if not params.get('name'):
-                        name = ids
-                    else:
-                        name = params['name'][0]
-                    if not params.get('tag'):
-                        tag = ''
-                    else:
-                        tag = params['tag'][0]
+            if not params.get('name'):
+                name = ids
+            else:
+                name = params['name'][0]
+            if not params.get('tag'):
+                tag = ''
+            else:
+                tag = params['tag'][0]
             if not params.get('Content-Type'):
                 mime_type = self.headers.get('content-type')
             else:
@@ -137,15 +137,23 @@ class ApiEndpoint(BaseHTTPRequestHandler):
 
     def do_DELETE(self):
         """отработка ёзапроса DELETE на ендпоинт /api/delete"""
+        storage = SqlStorage('file_server')
         if self.path.startswith('/api/delete'):
             params = parse_qs(urlparse(self.path).query)
             if len(params) == 0:
                 self._set_headers(400)
                 self.wfile.write('отсутствуют условия'.encode('utf-8'))
             else:
-
-                self._set_headers(200)
-                self.wfile.write('X files deleted'.encode('utf-8'))
+                #ids = params['id'][0]
+                print(params)
+                rez = storage.load_from_db(params)
+                if len(rez) == 0:
+                    self._set_headers(404)
+                    self.wfile.write('файл не найден'.encode('utf-8'))
+                else:
+                    print(rez)
+                    self._set_headers(200)
+                    self.wfile.write('X files deleted'.encode('utf-8'))
 
 
 def run(ip_addr: str, port: int):

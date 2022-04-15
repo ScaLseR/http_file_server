@@ -30,13 +30,12 @@ class SqlStorage:
                      mime_type: str, modification_time: str):
         """update если в базе уже есть такой файл"""
         cursor = self._connection.cursor()
-        cursor.execute("update fileserver set (name, tag, size, mimeType, "
-                       "modificationTime) values (?, ?, ?, ?, ?) where id=" + "'" + ids + "'", (name,
-                                                                                                tag, size, mime_type,
-                                                                                                modification_time))
+        cursor.execute("update fileserver set name='" + name + "', tag='" + tag + "', size='"
+                       + str(size) + "', mimeType='" + mime_type + "', "
+                       "modificationTime='" + modification_time + "' where id=" + "'" + ids + "'")
         self._connection.commit()
 
-    def load_from_db(self, **kwargs) -> dict:
+    def load_from_db(self, **kwargs) -> list:
         """получаем из базы файлы соответствующие условиям"""
         if len(kwargs) == 0:
             #если в запросе нет параметров возвращаем все значения из таблицы
@@ -44,6 +43,7 @@ class SqlStorage:
             cursor.execute("select * from fileserver")
             result = cursor.fetchall()
             self._connection.commit()
+            return result
         else:
             if len(kwargs) == 1:
                 #если у нас в запросе только 1 id(download, upload)
@@ -52,4 +52,4 @@ class SqlStorage:
                     cursor.execute("select * from fileserver where id =" + "'" + kwargs['id'] + "'")
                     result = cursor.fetchall()
                     self._connection.commit()
-        return result
+                    return result
