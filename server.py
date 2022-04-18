@@ -2,7 +2,6 @@
 import json
 import uuid
 import os
-import requests
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
 from datetime import datetime
