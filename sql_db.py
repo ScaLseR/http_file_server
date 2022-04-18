@@ -66,6 +66,7 @@ class SqlStorage:
         cursor = self._connection.cursor()
         cursor.execute("select * from fileserver where " + find_data)
         result = cursor.fetchall()
+        print(result)
         self._connection.commit()
         return result
 
