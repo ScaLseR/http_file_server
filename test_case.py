@@ -1,7 +1,7 @@
 """юнит тесты для API server.py"""
 import unittest
-import requests
 import re
+import requests as rq
 from jsonschema import validate
 
 
@@ -45,43 +45,43 @@ class TestApi(unittest.TestCase):
     def test_api_upload_code_201(self):
         """проверка кода 201 при удачной загрузке файла"""
         #test1
-        response = requests.post(self.api_upload, data="test1")
+        response = rq.post(self.api_upload, data="test1")
         self.assertEqual(response.status_code, 201, "should be code 201")
 
     def test_api_upload_valid_json_schema(self):
         """проверка ответа json на соответствие схеме"""
         #test2
-        response = requests.post(self.api_upload, data="test2")
+        response = rq.post(self.api_upload, data="test2")
         response_body = response.json()
         validate(response_body, self.valid_json_schema)
 
     def test_api_upload_correct_content_length(self):
         """проверка правильного заполнения заголовка Content-Length"""
         # test3
-        response = requests.post(self.api_upload, data="test3")
+        response = rq.post(self.api_upload, data="test3")
         response_body = response.json()
         self.assertEqual(response_body[0]['size'], 5, "Content-Length should be 5")
 
     def test_api_upload_full_param(self):
         """загрузка файла с корректно заполненными параметрами"""
         #test4
-        response = requests.post(self.api_upload,
-                                 params={'id': 4, 'name': 'test4', 'tag': 'test'},
-                                 data="test4")
+        response = rq.post(self.api_upload, params={'id': 4,
+                                                    'name': 'test4', 'tag': 'test'}, data="test4")
         response_body = response.json()
         self.assertEqual(int(response_body[0]['id']), 4,
-                         f"should be params['id'] = response_body['id'] = {int(response_body[0]['id'])}")
+                         f"should be params['id'] = response_body['id'] "
+                         f"= {int(response_body[0]['id'])}")
         self.assertEqual(response_body[0]['name'],
-                         'test4', f"should be params['name'] = response_body['name'] = {response_body[0]['name']}")
+                         'test4', f"should be params['name'] = "
+                                  f"response_body['name'] = {response_body[0]['name']}")
         self.assertEqual(response_body[0]['tag'],
-                         'test', f"should be params['tag'] = response_body['tag'] = {response_body[0]['tag']}")
+                         'test', f"should be params['tag'] = "
+                                 f"response_body['tag'] = {response_body[0]['tag']}")
 
     def test_api_upload_generate_id_with_name(self):
         """загрузка файла с автоматической генерацией id и заполненным вручную именем файла name"""
         #test5
-        response = requests.post(self.api_upload,
-                                 params={'name': 'test5', 'tag': 'test'},
-                                 data="test5")
+        response = rq.post(self.api_upload, params={'name': 'test5', 'tag': 'test'}, data="test5")
         response_body = response.json()
         result = re.match(r'^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$', response_body[0]['id'])
         generate_id = False
@@ -89,24 +89,24 @@ class TestApi(unittest.TestCase):
             generate_id = True
         self.assertTrue(generate_id, "should be generated id")
         self.assertEqual(response_body[0]['name'],
-                         'test5', f"should be params['name'] = response_body['name'] = {response_body[0]['name']}")
+                         'test5', f"should be params['name'] = "
+                                  f"response_body['name'] = {response_body[0]['name']}")
 
     def test_api_upload_generate_id_without_name(self):
-        """загрузка файла с автоматической генерацией id и не заполненным именем файла name, name = id"""
+        """загрузка файла с автоматической генерацией
+        id и не заполненным именем файла name, name = id"""
         #test6
-        response = requests.post(self.api_upload,
-                                 params={},
-                                 data="test6")
+        response = rq.post(self.api_upload, params={}, data="test6")
         response_body = response.json()
         self.assertEqual(response_body[0]['id'], response_body[0]['name'],
-                         f"should be response_body['id'] = response_body['name'] = {response_body[0]['id']}")
+                         f"should be response_body['id'] = "
+                         f"response_body['name'] = {response_body[0]['id']}")
 
+    @unittest.expectedFailure
     def test_api_upload_rewrite_file_with_enable_id(self):
         """загрузка файла с уже существующим id, перезапись существующего файла"""
         #test7
-        response = requests.post(self.api_upload,
-                                 params={'id': 4, 'name': 'test7'},
-                                 data="test7")
+        response = rq.post(self.api_upload, params={'id': 4, 'name': 'test7'}, data="test7")
         response_body = response.json()
         self.assertEqual(response_body[0]['name'],
                          'test7', f"should be response_body['name'] "
