@@ -14,11 +14,8 @@ class TestApi(unittest.TestCase):
         dirname = r"./"
         files = os.listdir(dirname)
         for file in files:
-            result = re.match(r'^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$', file)
+            result = re.match(r'^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$|^\d+$', file)
             if result:
-                os.remove(file)
-            result2 = re.match(r'^\w$', file)
-            if result2:
                 os.remove(file)
         os.remove('file_server')
         print('файлы удалены, база очищена')
