@@ -1,6 +1,7 @@
 """юнит тесты для API server.py"""
 import unittest
 import re
+import os
 import requests as rq
 from jsonschema import validate
 
@@ -8,8 +9,22 @@ from jsonschema import validate
 class TestApi(unittest.TestCase):
     """тестовый класс"""
 
+    @classmethod
+    def setUpClass(cls) -> None:
+        dirname = r"./"
+        files = os.listdir(dirname)
+        for file in files:
+            result = re.match(r'^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$', file)
+            if result:
+                os.remove(file)
+            result2 = re.match(r'^\w$', file)
+            if result2:
+                os.remove(file)
+        os.remove('file_server')
+        print('файлы удалены, база очищена')
+
     def setUp(self) -> None:
-        """прописываем дефолтные url значения для ендпоинтов"""
+        """прописываем дефолтные url значения и схему ответа json"""
         self.api_upload = "http://127.0.0.1:9876/api/upload"
         self.valid_json_schema = {
                   "properties": {
