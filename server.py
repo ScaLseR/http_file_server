@@ -150,7 +150,7 @@ class ApiEndpoint(BaseHTTPRequestHandler):
             self.wfile.write(rez_json.encode('utf-8'))
 
     def do_DELETE(self):#pylint: disable=invalid-name
-        """отработка ёзапроса DELETE на ендпоинт /api/delete"""
+        """отработка запроса DELETE на ендпоинт /api/delete"""
         storage = SqlStorage('file_server')
         if self.path.startswith('/api/delete'):
             params = parse_qs(urlparse(self.path).query)
@@ -172,7 +172,7 @@ class ApiEndpoint(BaseHTTPRequestHandler):
                     self.wfile.write((str(count) + ' files deleted').encode('utf-8'))
 
 
-def run(ip_addr: str, port: int):
+def run(ip_addr: str, port: int) -> None:
     """запуск сервера с переданными параметрами"""
     server = HTTPServer((ip_addr, port), ApiEndpoint)
     server.serve_forever()
