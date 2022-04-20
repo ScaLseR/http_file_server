@@ -23,10 +23,11 @@ class SqlStorage:
         keys = list(data.keys())
         rez_str = ''
         for key in keys:
-            rez_str += " and "
+            rez_str += ") and "
             if len(data[key]) == 1:
                 rez_str += key + "='" + data[key][0] + "'"
             else:
+                rez_str += "("
                 for i in range(len(data[key])):
                     rez_str += key + "='" + data[key][i] + "'"
                     if i < len(data[key]) - 1:
@@ -66,7 +67,6 @@ class SqlStorage:
         cursor = self._connection.cursor()
         cursor.execute("select * from fileserver where " + find_data)
         result = cursor.fetchall()
-        print(result)
         self._connection.commit()
         return result
 
