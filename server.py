@@ -111,27 +111,37 @@ class ApiEndpoint(BaseHTTPRequestHandler):
             #проверка условий и наличия пареметров в запросе
             if not params.get('id'):
                 ids = str(uuid.uuid4())
+
             else:
                 ids = params['id'][0]
                 find = {'id': [ids]}
                 _rez = storage.load_from_db(find)
                 if len(_rez) != 0:
                     name = _rez[0][1]
-                    tag = _rez[0][2]
+                    if len(_rez[0][2]) == 0:
+                        tag = ''
+                    else:
+                        tag = _rez[0][2]
+                    print('name1= ', name)
+                    print('tag1= ', tag)
                     upd = True
             if not params.get('name'):
                 name = ids
             else:
                 name = params['name'][0]
+            print('name2= ', name)
             if not params.get('tag'):
                 tag = ''
             else:
                 tag = params['tag'][0]
-            if not params.get('Content-Type'):
+            print('tag2= ', tag)
+            if not params.get('content-type'):
                 mime_type = self.headers.get('content-type')
             else:
-                mime_type = params['Content-Type'][0]
+                mime_type = params['content-type'][0]
+            print('mime_type= ', mime_type)
             content_size = int(self.headers.get('content-length'))
+            print('content_size= ', content_size)
             modification_time = self._date_time_str()
             #сохраняем все параметры загруженного файла в базу
             if upd:

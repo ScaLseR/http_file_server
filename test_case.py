@@ -14,6 +14,7 @@ class TestApi(unittest.TestCase):
         self.api_upload = "http://127.0.0.1:9876/api/upload"
         self.api_get = "http://127.0.0.1:9876/api/get"
         self.api_delete = "http://127.0.0.1:9876/api/delete"
+        self.api_download = "http://127.0.0.1:9876/api/download"
         self.valid_json_schema = {
                   "properties": {
                     "id": {
@@ -57,20 +58,20 @@ class TestApi(unittest.TestCase):
             os.remove('file_server')
 
     def test_api_upload_code_201(self):
-        """api_upload проверка кода 201 при удачной загрузке файла"""
+        """api_upload код 201 при удачной загрузке файла"""
         #test1
         response = rq.post(self.api_upload, data="test1")
         self.assertEqual(response.status_code, 201, "should be code 201")
 
     def test_api_upload_valid_json_schema(self):
-        """api_upload проверка ответа json на соответствие схеме"""
+        """api_upload соответствие схеме ответа json"""
         #test2
         response = rq.post(self.api_upload, data="test2")
         response_body = response.json()
         validate(response_body, self.valid_json_schema)
 
     def test_api_upload_correct_content_length(self):
-        """api_upload проверка правильного заполнения заголовка Content-Length"""
+        """api_upload правильное заполнение заголовка Content-Length"""
         # test3
         response = rq.post(self.api_upload, data="test3")
         response_body = response.json()
@@ -80,7 +81,8 @@ class TestApi(unittest.TestCase):
         """api_upload загрузка файла с корректно заполненными параметрами"""
         #test4
         response = rq.post(self.api_upload, params={'id': 4,
-                                                    'name': 'test4', 'tag': 'test'}, data="test4")
+                                                    'name': 'test4',
+                                                    'tag': 'test'}, data="test4")
         response_body = response.json()
         self.assertEqual(int(response_body[0]['id']), 4,
                          f"should be params['id'] = response_body['id'] "
@@ -96,7 +98,8 @@ class TestApi(unittest.TestCase):
         """api_upload загрузка файла с автоматической генерацией
         id и заполненным вручную именем файла name"""
         #test5
-        response = rq.post(self.api_upload, params={'name': 'test5', 'tag': 'test'}, data="test5")
+        response = rq.post(self.api_upload, params={'name': 'test5',
+                                                    'tag': 'test'}, data="test5")
         response_body = response.json()
         result = re.match(r'^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$', response_body[0]['id'])
         generate_id = False
@@ -117,29 +120,31 @@ class TestApi(unittest.TestCase):
                          f"should be response_body['id'] = "
                          f"response_body['name'] = {response_body[0]['id']}")
 
-    @unittest.expectedFailure
+    #@unittest.expectedFailure
     def test_api_upload_rewrite_file_with_enable_id(self):
-        """api_upload загрузка файла с уже существующим id,
-        перезапись существующего файла"""
+        """api_upload изменение файла с уже существующим id(
+        перезапись существующего файла)"""
         #test7
-        _ = rq.post(self.api_upload, params={'id': 7, 'name': 'test7'}, data="test7")
+        _ = rq.post(self.api_upload, params={'id': 7, 'name': 'test7', 'tag': '123',
+                                             'content-type': 'text'}, data="test7")
         response = rq.post(self.api_upload, params={'id': 7,
-                                                    'name': 'test7_new'}, data="test7_new")
+                                                    'name': 'test7_new', 'tag': '321',
+                                                    'content-type': 'text'}, data="test7_new")
         response_body = response.json()
         self.assertEqual(response_body[0]['name'],
                          'test7_new', f"should be response_body['name'] "
-                                  f"= name = {response_body[0]['name']}")
-        self.assertEqual(response_body[0]['tag'], '', "should be response_body['tag'] = ''")
+                                      f"= name = {response_body[0]['name']}")
+        self.assertEqual(response_body[0]['tag'], '321', "should be response_body['tag'] = '321'")
 
     def test_api_get_code_200(self):
-        """api_get проверка кода ответа 200 при получении выборки файла"""
+        """api_get код ответа 200 при получении выборки файла"""
         #test8
         _ = rq.post(self.api_upload, params={'id': 8, 'name': 'test8'}, data="test8")
         response = rq.get(self.api_get)
         self.assertEqual(response.status_code, 200, "should be code 200")
 
     def test_api_get_valid_json_schema(self):
-        """api_get проверка ответа json на соответствие схеме"""
+        """api_get соответствие схеме ответа json"""
         #test9
         _ = rq.post(self.api_upload, params={'id': 9, 'name': 'test9'}, data="test9")
         response = rq.get(self.api_get)
@@ -176,10 +181,12 @@ class TestApi(unittest.TestCase):
         self.assertEqual(len(response_body), 2, "should be 2")
 
     def test_api_delete_code_400(self):
-        """api_delete проверка кода ответа 400 при отсутствии условий"""
+        """api_delete код ответа 400 при отсутствии условий"""
         #test12
         response = rq.delete(self.api_delete)
+        response.encoding = 'utf-8'
         self.assertEqual(response.status_code, 400, "should be code 400")
+        self.assertEqual(response.text, 'отсутствуют условия', "should be 'отсутствуют условия'")
 
     def test_api_delete_1_file(self):
         """api_delete удаление 1 файла"""
@@ -205,12 +212,54 @@ class TestApi(unittest.TestCase):
         self.assertEqual(response.text, '2 files deleted', "should be '2 files deleted'")
 
     def test_api_delete_code_404(self):
-        """api_delete проверка кода ответа 404 при удалении несуществующего файла"""
-        #test12
+        """api_delete код ответа 404 при удалении несуществующего файла"""
+        #test15
         response = rq.delete(self.api_delete, params={'id': 1})
+        response.encoding = 'utf-8'
         self.assertEqual(response.status_code, 404, "should be code 404")
-        print(response.text.encode())
         self.assertEqual(response.text, 'файл не найден', "should be 'файл не найден'")
+
+    def test_api_download_code_400(self):
+        """api_download код ответа 400 при загрузке без условий"""
+        #test16
+        response = rq.get(self.api_download)
+        self.assertEqual(response.status_code, 400, "should be code 400")
+
+    def test_api_download_code_404(self):
+        """api_download код ответа 404 при загрузке не существующего файла"""
+        #test17
+        response = rq.get(self.api_download, params={'id': 1})
+        self.assertEqual(response.status_code, 404, "should be code 404")
+
+    def test_api_download_file(self):
+        """api_download загрузка существующего файла"""
+        #test18
+        _ = rq.post(self.api_upload, params={'id': 1,
+                                             'name': 'test18',
+                                             'tag': 'test'}, data="test1818")
+        response = rq.get(self.api_download, params={'id': 1})
+        self.assertEqual(response.status_code, 200, "should be code 200")
+        self.assertEqual(response.text, 'test1818', "should be 'test1818'")
+
+    def test_api_download_content_disposition(self):
+        """api_download Content-Disposition == filename = <имя файла>"""
+        #test19
+        _ = rq.post(self.api_upload, params={'id': 1,
+                                             'name': 'test19',
+                                             'tag': 'test'}, data="test1919")
+        response = rq.get(self.api_download, params={'id': 1})
+        self.assertIn('filename=: test19', response.headers['Content-Disposition'],
+                      "should be filename=: test19")
+
+    def test_api_download_content_type(self):
+        """api_download Content-Type выставляется таким
+        же как был при загрузке файла на сервер"""
+        # test20
+        _ = rq.post(self.api_upload, params={'id': 1,
+                                             'name': 'test20',
+                                             'tag': 'test', 'content-type': 'text_test_20'}, data="test2020")
+        response = rq.get(self.api_download, params={'id': 1})
+        self.assertEqual(response.headers['Content-Type'], 'text_test_20', "should be 'text_test_20'")
 
 if __name__ == "__main__":
     unittest.main()
