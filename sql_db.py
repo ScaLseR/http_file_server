@@ -48,9 +48,11 @@ class SqlStorage:
                      mime_type: str, modification_time: str) -> None:
         """update если в базе уже есть такой файл"""
         cursor = self._connection.cursor()
-        cursor.execute("update fileserver set name='" + name + "', tag='" + tag + "', size='"
-                       + str(size) + "', mimeType='" + mime_type + "', "
-                       "modificationTime='" + modification_time + "' where id=" + "'" + ids + "'")
+        # cursor.execute("update fileserver set name='" + name + "', tag='" + tag + "', size='"
+        #                + str(size) + "', mimeType='" + mime_type + "', "
+        #                "modificationTime='" + modification_time + "' where id=" + "'" + ids + "'")
+        cursor.execute(f"update fileserver set name='{name}', tag='{tag}', size='{str(size)}',"
+                       f" mimeType='{mime_type}', modificationTime='{modification_time}' where id='{ids}'")
         self._connection.commit()
 
     def load_from_db(self, data: dict) -> list:
@@ -73,5 +75,5 @@ class SqlStorage:
     def del_from_db(self, **kwargs) -> None:
         """удаляем запись из базы"""
         cursor = self._connection.cursor()
-        cursor.execute("delete from fileserver where id =" + "'" + kwargs['id'] + "'")
+        cursor.execute(f"delete from fileserver where id ='{kwargs['id']}'")
         self._connection.commit()
