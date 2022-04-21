@@ -122,26 +122,20 @@ class ApiEndpoint(BaseHTTPRequestHandler):
                         tag = ''
                     else:
                         tag = _rez[0][2]
-                    print('name1= ', name)
-                    print('tag1= ', tag)
                     upd = True
             if not params.get('name'):
                 name = ids
             else:
                 name = params['name'][0]
-            print('name2= ', name)
             if not params.get('tag'):
                 tag = ''
             else:
                 tag = params['tag'][0]
-            print('tag2= ', tag)
             if not params.get('content-type'):
                 mime_type = self.headers.get('content-type')
             else:
                 mime_type = params['content-type'][0]
-            print('mime_type= ', mime_type)
             content_size = int(self.headers.get('content-length'))
-            print('content_size= ', content_size)
             modification_time = self._date_time_str()
             #сохраняем все параметры загруженного файла в базу
             if upd:
@@ -185,7 +179,9 @@ class ApiEndpoint(BaseHTTPRequestHandler):
 def run(ip_addr: str, port: int) -> None:
     """запуск сервера с переданными параметрами"""
     server = HTTPServer((ip_addr, port), ApiEndpoint)
+    print('server started')
     server.serve_forever()
+
 
 if __name__ == "__main__":
     run('localhost', 9876)

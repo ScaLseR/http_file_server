@@ -3,11 +3,23 @@ import unittest
 import re
 import os
 import requests as rq
+from subprocess import Popen
 from jsonschema import validate
 
 
 class TestApi(unittest.TestCase):
     """тестовый класс"""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """запускаем сервер перед тестами"""
+        global proc
+        proc = Popen('python server.py')
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """останавливаем сервер после прогона тестов"""
+        proc.kill()
 
     def setUp(self) -> None:
         """прописываем дефолтные url значения и схему ответа json"""
