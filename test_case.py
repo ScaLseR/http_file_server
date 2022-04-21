@@ -2,24 +2,24 @@
 import unittest
 import re
 import os
-import requests as rq
 from subprocess import Popen
+import requests as rq
 from jsonschema import validate
 
 
 class TestApi(unittest.TestCase):
     """тестовый класс"""
 
-    @classmethod
-    def setUpClass(cls) -> None:
-        """запускаем сервер перед тестами"""
-        global proc
-        proc = Popen('python server.py')
-
-    @classmethod
-    def tearDownClass(cls) -> None:
-        """останавливаем сервер после прогона тестов"""
-        proc.kill()
+    # @classmethod
+    # def setUpClass(cls) -> None:
+    #     """запускаем сервер перед тестами"""
+    #     global proc
+    #     proc = Popen('python server.py')
+    #
+    # @classmethod
+    # def tearDownClass(cls) -> None:
+    #     """останавливаем сервер после прогона тестов"""
+    #     proc.kill()
 
     def setUp(self) -> None:
         """прописываем дефолтные url значения и схему ответа json"""
@@ -260,8 +260,9 @@ class TestApi(unittest.TestCase):
                                              'name': 'test19',
                                              'tag': 'test'}, data="test1919")
         response = rq.get(self.api_download, params={'id': 1})
-        self.assertIn('filename=: test19', response.headers['Content-Disposition'],
-                      "should be filename=: test19")
+        response_header_cd = response.headers['Content-Disposition']
+        index = response_header_cd.rfind(': ')
+        self.assertEqual(response_header_cd[index + 2:], 'test19', "should be name = test19")
 
     def test_api_download_content_type(self):
         """api_download Content-Type выставляется таким
@@ -269,9 +270,11 @@ class TestApi(unittest.TestCase):
         # test20
         _ = rq.post(self.api_upload, params={'id': 1,
                                              'name': 'test20',
-                                             'tag': 'test', 'content-type': 'text_test_20'}, data="test2020")
+                                             'tag': 'test', 'content-type':
+                                                 'text_test_20'}, data="test2020")
         response = rq.get(self.api_download, params={'id': 1})
-        self.assertEqual(response.headers['Content-Type'], 'text_test_20', "should be 'text_test_20'")
+        self.assertEqual(response.headers['Content-Type'],
+                         'text_test_20', "should be 'text_test_20'")
 
 if __name__ == "__main__":
     unittest.main()
