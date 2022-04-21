@@ -111,7 +111,6 @@ class ApiEndpoint(BaseHTTPRequestHandler):
             #проверка условий и наличия пареметров в запросе
             if not params.get('id'):
                 ids = str(uuid.uuid4())
-
             else:
                 ids = params['id'][0]
                 find = {'id': [ids]}
