@@ -62,10 +62,10 @@ class TestApi(unittest.TestCase):
         """чистка файлов и БД после теста"""
         dirname = r"./"
         files = os.listdir(dirname)
-        for file in files:
-            result = re.match(r'^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$|^\d+$', file)
+        for file_name in files:
+            result = re.match(r'^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$|^\d+$', file_name)
             if result:
-                os.remove(file)
+                os.remove(file_name)
         if os.path.exists('file_server'):
             os.remove('file_server')
 
