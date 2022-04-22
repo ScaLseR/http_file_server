@@ -72,7 +72,7 @@ class TestApi(unittest.TestCase):
     def test_api_upload_code_201(self):
         """api_upload код 201 при удачной загрузке файла"""
         #test1
-        response = rq.post(self.api_upload, data="test1")
+        response = rq.post(self.api_upload, data="test1", params={'content-type': 'text'})
         self.assertEqual(response.status_code, 201, "should be code 201")
 
     def test_api_upload_valid_json_schema(self):
