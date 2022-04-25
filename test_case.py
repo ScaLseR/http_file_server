@@ -2,7 +2,7 @@
 import unittest
 import re
 import os
-from subprocess import Popen
+import time
 import requests as rq
 from jsonschema import validate
 
@@ -94,7 +94,7 @@ class TestApi(unittest.TestCase):
         #test4
         response = rq.post(self.api_upload, params={'id': 4,
                                                     'name': 'test4',
-                                                    'tag': 'test'}, data="test4")
+                                                    'tag': 'test', 'content-type': 'text'}, data="test4")
         response_body = response.json()
         self.assertEqual(int(response_body[0]['id']), 4,
                          f"should be params['id'] = response_body['id'] "
@@ -105,13 +105,14 @@ class TestApi(unittest.TestCase):
         self.assertEqual(response_body[0]['tag'],
                          'test', f"should be params['tag'] = "
                                  f"response_body['tag'] = {response_body[0]['tag']}")
+        self.assertEqual(response_body[0]['size'], 5, "Content-Length should be 5")
 
     def test_api_upload_generate_id_with_name(self):
         """api_upload загрузка файла с автоматической генерацией
         id и заполненным вручную именем файла name"""
         #test5
         response = rq.post(self.api_upload, params={'name': 'test5',
-                                                    'tag': 'test'}, data="test5")
+                                                    'tag': 'test', 'content-type': 'text'}, data="test5")
         response_body = response.json()
         result = re.match(r'^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$', response_body[0]['id'])
         generate_id = False
@@ -126,7 +127,7 @@ class TestApi(unittest.TestCase):
         """api_upload загрузка файла с автоматической генерацией
         id и не заполненным именем файла name, name = id"""
         #test6
-        response = rq.post(self.api_upload, params={}, data="test6")
+        response = rq.post(self.api_upload, params={'content-type': 'text'}, data="test6")
         response_body = response.json()
         self.assertEqual(response_body[0]['id'], response_body[0]['name'],
                          f"should be response_body['id'] = "
@@ -137,16 +138,20 @@ class TestApi(unittest.TestCase):
         """api_upload изменение файла с уже существующим id(
         перезапись существующего файла)"""
         #test7
-        _ = rq.post(self.api_upload, params={'id': 7, 'name': 'test7', 'tag': '123',
-                                             'content-type': 'text'}, data="test7")
-        response = rq.post(self.api_upload, params={'id': 7,
-                                                    'name': 'test7_new', 'tag': '321',
-                                                    'content-type': 'text'}, data="test7_new")
-        response_body = response.json()
-        self.assertEqual(response_body[0]['name'],
+        response_1 = rq.post(self.api_upload, params={'id': 7, 'name': 'test7',
+                                                      'tag': '123',
+                                                      'content-type': 'text'}, data="test7")
+        response_1_body = response_1.json()
+        time.sleep(1)
+        response_2 = rq.post(self.api_upload, params={'id': 7, 'name': 'test7_new',
+                                                      'tag': '321', 'content-type': 'text'},
+                             data="test7_new")
+        response_2_body = response_2.json()
+        self.assertEqual(response_2_body[0]['name'],
                          'test7_new', f"should be response_body['name'] "
-                                      f"= name = {response_body[0]['name']}")
-        self.assertEqual(response_body[0]['tag'], '321', "should be response_body['tag'] = '321'")
+                                      f"= name = {response_2_body[0]['name']}")
+        self.assertEqual(response_2_body[0]['tag'], '321', "should be response_body['tag'] = '321'")
+        self.assertGreater(response_2_body[0]['modificationTime'], response_1_body[0]['modificationTime'])
 
     def test_api_get_code_200(self):
         """api_get код ответа 200 при получении выборки файла"""
@@ -248,7 +253,7 @@ class TestApi(unittest.TestCase):
         #test18
         _ = rq.post(self.api_upload, params={'id': 1,
                                              'name': 'test18',
-                                             'tag': 'test'}, data="test1818")
+                                             'tag': 'test', 'content-type': 'text/plain'}, data="test1818")
         response = rq.get(self.api_download, params={'id': 1})
         self.assertEqual(response.status_code, 200, "should be code 200")
         self.assertEqual(response.text, 'test1818', "should be 'test1818'")
@@ -257,12 +262,12 @@ class TestApi(unittest.TestCase):
         """api_download Content-Disposition == filename = <имя файла>"""
         #test19
         _ = rq.post(self.api_upload, params={'id': 1,
-                                             'name': 'test19',
+                                             'name': 'test19.txt',
                                              'tag': 'test'}, data="test1919")
         response = rq.get(self.api_download, params={'id': 1})
         response_header_cd = response.headers['Content-Disposition']
         index = response_header_cd.rfind(': ')
-        self.assertEqual(response_header_cd[index + 2:], 'test19', "should be name = test19")
+        self.assertEqual(response_header_cd[index + 2:], 'test19.txt', "should be name = test19.txt")
 
     def test_api_download_content_type(self):
         """api_download Content-Type выставляется таким
@@ -271,10 +276,10 @@ class TestApi(unittest.TestCase):
         _ = rq.post(self.api_upload, params={'id': 1,
                                              'name': 'test20',
                                              'tag': 'test', 'content-type':
-                                                 'text_test_20'}, data="test2020")
+                                                 'text/plain'}, data="test2020")
         response = rq.get(self.api_download, params={'id': 1})
         self.assertEqual(response.headers['Content-Type'],
-                         'text_test_20', "should be 'text_test_20'")
+                         'text/plain', "should be 'text/plain'")
 
 if __name__ == "__main__":
     unittest.main()
