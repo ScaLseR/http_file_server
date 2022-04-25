@@ -159,6 +159,22 @@ class TestApi(unittest.TestCase):
                            response_1_body[0]['modificationTime'])
         self.assertEqual(response_get_new_file.text, 'test7_new', "should be 'test7_new'")
 
+    def test_api_upload_files_eq_name(self):
+        """api_upload загрузка нескольких файлов с одинаковым name и tag"""
+        # test7_2
+        _ = rq.post(self.api_upload, params={'name': 'test7_2',
+                                             'content-type': 'text/plain', 'tag': 'test'},
+                    data="test7_2")
+        _ = rq.post(self.api_upload, params={'name': 'test7_2',
+                                             'content-type': 'text/plain', 'tag': 'test'},
+                    data="test7_2")
+        _ = rq.post(self.api_upload, params={'name': 'test7_2',
+                                             'content-type': 'text/plain', 'tag': 'test'},
+                    data="test7_2")
+        response = rq.get(self.api_get)
+        response_body = response.json()
+        self.assertEqual(len(response_body), 3, "should be 3")
+
     def test_api_get_code_200(self):
         """api_get код ответа 200 при получении выборки файла"""
         #test8
@@ -244,7 +260,8 @@ class TestApi(unittest.TestCase):
                                              'content-type': 'text/plain'}, data="test14_3")
         _ = rq.post(self.api_upload, params={'id': 14_4, 'name': 'test14',
                                              'content-type': 'text/plain'}, data="test14_4")
-        response = rq.delete(self.api_delete, params={'id': [14, 14_2, 14_3, 14_4], 'name': 'test14'})
+        response = rq.delete(self.api_delete, params={'id': [14, 14_2, 14_3, 14_4],
+                                                      'name': 'test14'})
         self.assertEqual(response.status_code, 200, "should be code 200")
         self.assertEqual(response.text, '2 files deleted', "should be '2 files deleted'")
 
