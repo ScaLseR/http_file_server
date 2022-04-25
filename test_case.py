@@ -150,12 +150,14 @@ class TestApi(unittest.TestCase):
                                                       'tag': '321', 'content-type': 'text/plain'},
                              data="test7_new")
         response_2_body = response_2.json()
+        response_get_new_file = rq.get(self.api_download, params={'id': 7})
         self.assertEqual(response_2_body[0]['name'],
                          'test7_new', f"should be response_body['name'] "
                                       f"= name = {response_2_body[0]['name']}")
         self.assertEqual(response_2_body[0]['tag'], '321', "should be response_body['tag'] = '321'")
         self.assertGreater(response_2_body[0]['modificationTime'],
                            response_1_body[0]['modificationTime'])
+        self.assertEqual(response_get_new_file.text, 'test7_new', "should be 'test7_new'")
 
     def test_api_get_code_200(self):
         """api_get код ответа 200 при получении выборки файла"""
@@ -178,14 +180,14 @@ class TestApi(unittest.TestCase):
         """api_get вывод всех метаданных файлов на
         сервере при пустом условии"""
         #test10
-        _ = rq.post(self.api_upload, params={'id': 1,
+        _ = rq.post(self.api_upload, params={'id': 10,
                                              'name': 'test10_1',
                                              'tag': 'test', 'content-type': 'text/plain'},
                     data="test10_1")
-        _ = rq.post(self.api_upload, params={'id': 2,
+        _ = rq.post(self.api_upload, params={'id': 10_2,
                                              'name': 'test10_2', 'content-type': 'text/plain'},
                     data="test10_2")
-        _ = rq.post(self.api_upload, params={'id': 3, 'content-type': 'text/plain'},
+        _ = rq.post(self.api_upload, params={'id': 10_3, 'content-type': 'text/plain'},
                     data="test10_3")
         _ = rq.post(self.api_upload,  params={'content-type': 'text/plain'},
                     data="test10_4")
@@ -196,17 +198,17 @@ class TestApi(unittest.TestCase):
     def test_api_get_files_from_params(self):
         """api_get возвращение метаданных файлов удовлетворяющих условию"""
         #test11
-        _ = rq.post(self.api_upload, params={'id': 1,
+        _ = rq.post(self.api_upload, params={'id': 11,
                                              'name': 'test11',
                                              'tag': 'test', 'content-type': 'text/plain'},
                     data="test11_1")
-        _ = rq.post(self.api_upload, params={'id': 2,
+        _ = rq.post(self.api_upload, params={'id': 11_2,
                                              'name': 'test10', 'content-type': 'text/plain'},
                     data="test11_2")
-        _ = rq.post(self.api_upload, params={'id': 3,
+        _ = rq.post(self.api_upload, params={'id': 11_3,
                                              'name': 'test11', 'content-type': 'text/plain'},
                     data="test11_3")
-        response = rq.get(self.api_get, params={'id': [1, 2, 3], 'name': 'test11'})
+        response = rq.get(self.api_get, params={'id': [11, 11_2, 11_3], 'name': 'test11'})
         response_body = response.json()
         self.assertEqual(len(response_body), 2, "should be 2")
 
@@ -221,35 +223,35 @@ class TestApi(unittest.TestCase):
     def test_api_delete_1_file(self):
         """api_delete удаление 1 файла"""
         #test13
-        _ = rq.post(self.api_upload, params={'id': 1,
+        _ = rq.post(self.api_upload, params={'id': 13,
                                              'name': 'test13',
                                              'tag': 'test', 'content-type': 'text/plain'},
                     data="test13")
-        response = rq.delete(self.api_delete, params={'id': 1, 'content-type': 'text/plain'})
+        response = rq.delete(self.api_delete, params={'id': 13})
         self.assertEqual(response.status_code, 200, "should be code 200")
         self.assertEqual(response.text, '1 files deleted', "should be '1 files deleted'")
 
     def test_api_delete_few_files_from_params(self):
         """api_delete удаление нескольких файлов"""
         #test14
-        _ = rq.post(self.api_upload, params={'id': 1,
+        _ = rq.post(self.api_upload, params={'id': 14,
                                              'name': 'test14',
                                              'tag': 'test', 'content-type': 'text/plain'},
                     data="test14")
-        _ = rq.post(self.api_upload, params={'id': 2, 'name': 'test14_2',
+        _ = rq.post(self.api_upload, params={'id': 14_2, 'name': 'test14_2',
                                              'content-type': 'text/plain'}, data="test14_2")
-        _ = rq.post(self.api_upload, params={'id': 3, 'name': 'test14_3',
+        _ = rq.post(self.api_upload, params={'id': 14_3, 'name': 'test14_3',
                                              'content-type': 'text/plain'}, data="test14_3")
-        _ = rq.post(self.api_upload, params={'id': 4, 'name': 'test14',
+        _ = rq.post(self.api_upload, params={'id': 14_4, 'name': 'test14',
                                              'content-type': 'text/plain'}, data="test14_4")
-        response = rq.delete(self.api_delete, params={'id': [1, 2, 3, 4], 'name': 'test14'})
+        response = rq.delete(self.api_delete, params={'id': [14, 14_2, 14_3, 14_4], 'name': 'test14'})
         self.assertEqual(response.status_code, 200, "should be code 200")
         self.assertEqual(response.text, '2 files deleted', "should be '2 files deleted'")
 
     def test_api_delete_code_404(self):
         """api_delete код ответа 404 при удалении несуществующего файла"""
         #test15
-        response = rq.delete(self.api_delete, params={'id': 1})
+        response = rq.delete(self.api_delete, params={'id': 15})
         response.encoding = 'utf-8'
         self.assertEqual(response.status_code, 404, "should be code 404")
         self.assertEqual(response.text, 'файл не найден', "should be 'файл не найден'")
@@ -263,28 +265,28 @@ class TestApi(unittest.TestCase):
     def test_api_download_code_404(self):
         """api_download код ответа 404 при загрузке не существующего файла"""
         #test17
-        response = rq.get(self.api_download, params={'id': 1})
+        response = rq.get(self.api_download, params={'id': 17})
         self.assertEqual(response.status_code, 404, "should be code 404")
 
     def test_api_download_file(self):
         """api_download загрузка существующего файла"""
         #test18
-        _ = rq.post(self.api_upload, params={'id': 1,
+        _ = rq.post(self.api_upload, params={'id': 18,
                                              'name': 'test18',
                                              'tag': 'test', 'content-type': 'text/plain'},
                     data="test1818")
-        response = rq.get(self.api_download, params={'id': 1})
+        response = rq.get(self.api_download, params={'id': 18})
         self.assertEqual(response.status_code, 200, "should be code 200")
         self.assertEqual(response.text, 'test1818', "should be 'test1818'")
 
     def test_api_download_content_disposition(self):
         """api_download Content-Disposition == filename = <имя файла>"""
         #test19
-        _ = rq.post(self.api_upload, params={'id': 1,
+        _ = rq.post(self.api_upload, params={'id': 19,
                                              'name': 'test19.txt',
                                              'tag': 'test', 'content-type': 'text/plain'},
                     data="test1919")
-        response = rq.get(self.api_download, params={'id': 1})
+        response = rq.get(self.api_download, params={'id': 19})
         response_header_cd = response.headers['Content-Disposition']
         index = response_header_cd.rfind(': ')
         self.assertEqual(response_header_cd[index + 2:], 'test19.txt',
@@ -294,11 +296,11 @@ class TestApi(unittest.TestCase):
         """api_download Content-Type выставляется таким
         же как был при загрузке файла на сервер"""
         # test20
-        _ = rq.post(self.api_upload, params={'id': 1,
+        _ = rq.post(self.api_upload, params={'id': 20,
                                              'name': 'test20',
                                              'tag': 'test', 'content-type':
                                                  'text/plain'}, data="test2020")
-        response = rq.get(self.api_download, params={'id': 1})
+        response = rq.get(self.api_download, params={'id': 20})
         self.assertEqual(response.headers['Content-Type'],
                          'text/plain', "should be 'text/plain'")
 
