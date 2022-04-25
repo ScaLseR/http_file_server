@@ -7,19 +7,8 @@ import requests as rq
 from jsonschema import validate
 
 
-class TestApi(unittest.TestCase):
+class TestApi(unittest.TestCase):#pylint: disable=too-many-public-methods
     """тестовый класс"""
-
-    # @classmethod
-    # def setUpClass(cls) -> None:
-    #     """запускаем сервер перед тестами"""
-    #     global proc
-    #     proc = Popen('python server.py')
-    #
-    # @classmethod
-    # def tearDownClass(cls) -> None:
-    #     """останавливаем сервер после прогона тестов"""
-    #     proc.kill()
 
     def setUp(self) -> None:
         """прописываем дефолтные url значения и схему ответа json"""
@@ -136,7 +125,6 @@ class TestApi(unittest.TestCase):
                          f"should be response_body['id'] = "
                          f"response_body['name'] = {response_body[0]['id']}")
 
-    #@unittest.expectedFailure
     def test_api_upload_rewrite_file_with_enable_id(self):
         """api_upload изменение файла с уже существующим id(
         перезапись существующего файла)"""
