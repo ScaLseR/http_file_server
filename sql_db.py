@@ -4,6 +4,8 @@ import sqlite3
 
 class SqlStorage:
     """класс создания и работы с БД sqlite3"""
+    PARAMS = ['id', 'name', 'tag']
+
     def __init__(self, db_name='DefaultName'):
         """присваиваем имя нашей БД, настраиваем коннект"""
         self._db_name = db_name
@@ -23,18 +25,18 @@ class SqlStorage:
         keys = list(data.keys())
         rez_str = ''
         for key in keys:
-            rez_str += " and "
-            if len(data[key]) == 1:
-                rez_str += key + "='" + data[key][0] + "'"
-            else:
-                rez_str += "("
-                for i in range(len(data[key])):
-                    rez_str += key + "='" + data[key][i] + "'"
-                    if i < len(data[key]) - 1:
-                        rez_str += " or "
-                rez_str += ")"
+            if key in SqlStorage.PARAMS:
+                rez_str += " and "
+                if len(data[key]) == 1:
+                    rez_str += key + "='" + data[key][0] + "'"
+                else:
+                    rez_str += "("
+                    for i in range(len(data[key])):
+                        rez_str += key + "='" + data[key][i] + "'"
+                        if i < len(data[key]) - 1:
+                            rez_str += " or "
+                    rez_str += ")"
         rez_str = rez_str[5:]
-        print('rez_str= ', rez_str)
         return rez_str
 
     def save_to_db(self, ids: str, name: str, tag: str, size: int,#pylint: disable=too-many-arguments
