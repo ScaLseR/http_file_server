@@ -58,13 +58,13 @@ class ApiEndpoint(BaseHTTPRequestHandler):
             main_list.append(part_dict)
         return main_list
 
-    def do_GET(self):#pylint: disable=invalid-name
+    def do_GET(self):  # pylint: disable=invalid-name
         """отработка запросов GET на ендпоинты /api/get и /api/download"""
         storage = SqlStorage('file_server')
-        #обрабатываем api/get
+        # обрабатываем api/get
         if self.path.startswith('/api/get'):
             params = parse_qs(urlparse(self.path).query)
-            #если нет параметров то выводим все файлы
+            # если нет параметров то выводим все файлы
             if len(params) == 0:
                 rez = storage.load_from_db({})
                 rez_list = self._create_dict(rez)
@@ -80,18 +80,18 @@ class ApiEndpoint(BaseHTTPRequestHandler):
         # обрабатываем api/download
         if self.path.startswith('/api/download'):
             params = parse_qs(urlparse(self.path).query)
-            #если нет параметров выводим 400 ошибку
-            if len(params) == 0:
+            # если нет параметров выводим 400 ошибку
+            if len(params) == 0 or ('id' not in params):
                 self._set_headers(400)
                 self.wfile.write('отсутствуют уловия'.encode('utf-8'))
             else:
                 find = {'id': [params['id'][0]]}
                 data = storage.load_from_db(find)
-                #если файла с заданным id нет в базе
+                # если файла с заданным id нет в базе
                 if len(data) == 0:
                     self._set_headers(404)
                     self.wfile.write('файл не существует'.encode('utf-8'))
-                #файл с заданным id присутствует в базе, возвращаем файл клиенту
+                # файл с заданным id присутствует в базе, возвращаем файл клиенту
                 else:
                     self.send_response(200)
                     self.send_header('Content-type', data[0][4])
@@ -102,13 +102,13 @@ class ApiEndpoint(BaseHTTPRequestHandler):
                     self.wfile.write(body)
                     print('файл ' + data[0][1] + ' отправлен')
 
-    def do_POST(self):#pylint: disable=invalid-name, too-many-locals
+    def do_POST(self):  # pylint: disable=invalid-name, too-many-locals
         """отработка запросов POST на ендпоинт /api/upload"""
         storage = SqlStorage('file_server')
         upd = False
         if self.path.startswith('/api/upload'):
             params = parse_qs(urlparse(self.path).query)
-            #проверка условий и наличия пареметров в запросе
+            # проверка условий и наличия пареметров в запросе
             if not params.get('id'):
                 ids = str(uuid.uuid4())
             else:
@@ -136,15 +136,15 @@ class ApiEndpoint(BaseHTTPRequestHandler):
                 mime_type = params['content-type'][0]
             content_size = int(self.headers.get('content-length'))
             modification_time = self._date_time_str()
-            #сохраняем все параметры загруженного файла в базу
+            # сохраняем все параметры загруженного файла в базу
             if upd:
                 storage.update_to_db(ids, name, tag, content_size, mime_type, modification_time)
             else:
                 storage.save_to_db(ids, name, tag, content_size, mime_type, modification_time)
-            #получаем тело файла и сохраняем на диск
+            # получаем тело файла и сохраняем на диск
             post_body = self.rfile.read(content_size)
             self._save_file_to_disk(ids, post_body)
-            #создаем json обьект и возвращаем клиенту
+            # создаем json обьект и возвращаем клиенту
             find = {'id': [ids]}
             rez = storage.load_from_db(find)
             time_dict = self._create_dict(rez)
@@ -152,7 +152,7 @@ class ApiEndpoint(BaseHTTPRequestHandler):
             self._set_headers(201)
             self.wfile.write(rez_json.encode('utf-8'))
 
-    def do_DELETE(self):#pylint: disable=invalid-name
+    def do_DELETE(self):  # pylint: disable=invalid-name
         """отработка запроса DELETE на ендпоинт /api/delete"""
         storage = SqlStorage('file_server')
         if self.path.startswith('/api/delete'):
