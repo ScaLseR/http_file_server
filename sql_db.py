@@ -23,7 +23,7 @@ class SqlStorage:
         keys = list(data.keys())
         rez_str = ''
         for key in keys:
-            rez_str += ") and "
+            rez_str += " and "
             if len(data[key]) == 1:
                 rez_str += key + "='" + data[key][0] + "'"
             else:
@@ -32,7 +32,9 @@ class SqlStorage:
                     rez_str += key + "='" + data[key][i] + "'"
                     if i < len(data[key]) - 1:
                         rez_str += " or "
+                rez_str += ")"
         rez_str = rez_str[5:]
+        print('rez_str= ', rez_str)
         return rez_str
 
     def save_to_db(self, ids: str, name: str, tag: str, size: int,#pylint: disable=too-many-arguments
@@ -66,6 +68,7 @@ class SqlStorage:
         find_data = self._gef_find_string(data)
         cursor = self._connection.cursor()
         cursor.execute("select * from fileserver where " + find_data)
+        print(find_data)
         result = cursor.fetchall()
         self._connection.commit()
         return result
