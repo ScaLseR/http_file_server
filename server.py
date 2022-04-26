@@ -65,7 +65,8 @@ class ApiEndpoint(BaseHTTPRequestHandler):
         if self.path.startswith('/api/get'):
             params = parse_qs(urlparse(self.path).query)
             # если нет параметров то выводим все файлы
-            if len(params) == 0:
+            if len(params) == 0 or ('id' not in params) and ('name' not in params) \
+                    and ('tag' not in params):
                 rez = storage.load_from_db({})
                 rez_list = self._create_dict(rez)
                 self._set_headers(200)
@@ -157,7 +158,8 @@ class ApiEndpoint(BaseHTTPRequestHandler):
         storage = SqlStorage('file_server')
         if self.path.startswith('/api/delete'):
             params = parse_qs(urlparse(self.path).query)
-            if len(params) == 0 or ('id' not in params) and ('name' not in params) and ('tag' not in params):
+            if len(params) == 0 or ('id' not in params) and ('name' not in params) \
+                    and ('tag' not in params):
                 self._set_headers(400)
                 self.wfile.write('отсутствуют условия'.encode('utf-8'))
             else:
