@@ -141,7 +141,6 @@ class ApiEndpoint(BaseHTTPRequestHandler):
                     mime_type = magic.from_buffer(post_body, mime=True)
             else:
                 mime_type = params['content-type'][0]
-            # content_size = int(self.headers.get('content-length'))
             modification_time = self._date_time_str()
             # сохраняем все параметры загруженного файла в базу
             if upd:
@@ -150,7 +149,6 @@ class ApiEndpoint(BaseHTTPRequestHandler):
             else:
                 ApiEndpoint._storage.save_to_db(ids, name, tag, content_size,
                                                 mime_type, modification_time)
-            # self._save_file_to_disk(ids, post_body)
             # создаем json обьект и возвращаем клиенту
             find = {'id': [ids]}
             rez = ApiEndpoint._storage.load_from_db(find)
@@ -185,7 +183,6 @@ class ApiEndpoint(BaseHTTPRequestHandler):
 def run(ip_addr: str, port: int) -> None:
     """запуск сервера с переданными параметрами"""
     server = HTTPServer((ip_addr, port), ApiEndpoint)
-    # _storage = SqlStorage('file_server')
     print('server started')
     server.serve_forever()
 
