@@ -4,7 +4,7 @@ import sqlite3
 
 class SqlStorage:
     """класс создания и работы с БД sqlite3"""
-    PARAMS = ['id', 'name', 'tag']
+    _PARAMS = ['id', 'name', 'tag']
 
     def __init__(self, db_name='DefaultName'):
         """присваиваем имя нашей БД, настраиваем коннект"""
@@ -25,7 +25,7 @@ class SqlStorage:
         keys = list(data.keys())
         rez_str = ''
         for key in keys:
-            if key in SqlStorage.PARAMS:
+            if key in SqlStorage._PARAMS:
                 rez_str += " and "
                 if len(data[key]) == 1:
                     rez_str += key + "='" + data[key][0] + "'"

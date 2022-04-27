@@ -2,15 +2,16 @@
 import json
 import uuid
 import os
-import magic
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
 from datetime import datetime
+import magic
 from sql_db import SqlStorage
 
 
 class ApiEndpoint(BaseHTTPRequestHandler):
     """класс дял получения и обработки запросов на ендпоинты"""
+    _storage = SqlStorage('file_server')
 
     def _set_headers(self, id_response: int) -> None:
         """формирование хедера с указанным статусом ответа"""
@@ -61,20 +62,19 @@ class ApiEndpoint(BaseHTTPRequestHandler):
 
     def do_GET(self):  # pylint: disable=invalid-name
         """отработка запросов GET на ендпоинты /api/get и /api/download"""
-        storage = SqlStorage('file_server')
         # обрабатываем api/get
         if self.path.startswith('/api/get'):
             params = parse_qs(urlparse(self.path).query)
             # если нет параметров то выводим все файлы
             if len(params) == 0 or ('id' not in params) and ('name' not in params) \
                     and ('tag' not in params):
-                rez = storage.load_from_db({})
+                rez = ApiEndpoint._storage.load_from_db({})
                 rez_list = self._create_dict(rez)
                 self._set_headers(200)
                 rez_json = self._create_json(rez_list)
                 self.wfile.write(rez_json.encode('utf-8'))
             else:
-                rez = storage.load_from_db(params)
+                rez = ApiEndpoint._storage.load_from_db(params)
                 rez_list = self._create_dict(rez)
                 self._set_headers(200)
                 rez_json = self._create_json(rez_list)
@@ -88,7 +88,7 @@ class ApiEndpoint(BaseHTTPRequestHandler):
                 self.wfile.write('отсутствуют уловия'.encode('utf-8'))
             else:
                 find = {'id': [params['id'][0]]}
-                data = storage.load_from_db(find)
+                data = ApiEndpoint._storage.load_from_db(find)
                 # если файла с заданным id нет в базе
                 if len(data) == 0:
                     self._set_headers(404)
@@ -106,7 +106,6 @@ class ApiEndpoint(BaseHTTPRequestHandler):
 
     def do_POST(self):  # pylint: disable=invalid-name, too-many-locals
         """отработка запросов POST на ендпоинт /api/upload"""
-        storage = SqlStorage('file_server')
         upd = False
         if self.path.startswith('/api/upload'):
             params = parse_qs(urlparse(self.path).query)
@@ -116,7 +115,7 @@ class ApiEndpoint(BaseHTTPRequestHandler):
             else:
                 ids = params['id'][0]
                 find = {'id': [ids]}
-                _rez = storage.load_from_db(find)
+                _rez = ApiEndpoint._storage.load_from_db(find)
                 if len(_rez) != 0:
                     name = _rez[0][1]
                     if len(_rez[0][2]) == 0:
@@ -135,25 +134,26 @@ class ApiEndpoint(BaseHTTPRequestHandler):
             # получаем тело файла и сохраняем на диск
             content_size = int(self.headers.get('content-length'))
             post_body = self.rfile.read(content_size)
+            self._save_file_to_disk(ids, post_body)
             if not params.get('content-type'):
                 mime_type = self.headers.get('content-type')
                 if not mime_type:
                     mime_type = magic.from_buffer(post_body, mime=True)
             else:
                 mime_type = params['content-type'][0]
-            #content_size = int(self.headers.get('content-length'))
+            # content_size = int(self.headers.get('content-length'))
             modification_time = self._date_time_str()
             # сохраняем все параметры загруженного файла в базу
             if upd:
-                storage.update_to_db(ids, name, tag, content_size, mime_type, modification_time)
+                ApiEndpoint._storage.update_to_db(ids, name, tag,
+                                                  content_size, mime_type, modification_time)
             else:
-                storage.save_to_db(ids, name, tag, content_size, mime_type, modification_time)
-            # получаем тело файла и сохраняем на диск
-            #post_body = self.rfile.read(content_size)
-            self._save_file_to_disk(ids, post_body)
+                ApiEndpoint._storage.save_to_db(ids, name, tag, content_size,
+                                                mime_type, modification_time)
+            # self._save_file_to_disk(ids, post_body)
             # создаем json обьект и возвращаем клиенту
             find = {'id': [ids]}
-            rez = storage.load_from_db(find)
+            rez = ApiEndpoint._storage.load_from_db(find)
             time_dict = self._create_dict(rez)
             rez_json = self._create_json(time_dict)
             self._set_headers(201)
@@ -161,7 +161,6 @@ class ApiEndpoint(BaseHTTPRequestHandler):
 
     def do_DELETE(self):  # pylint: disable=invalid-name
         """отработка запроса DELETE на ендпоинт /api/delete"""
-        storage = SqlStorage('file_server')
         if self.path.startswith('/api/delete'):
             params = parse_qs(urlparse(self.path).query)
             if len(params) == 0 or ('id' not in params) and ('name' not in params) \
@@ -169,14 +168,14 @@ class ApiEndpoint(BaseHTTPRequestHandler):
                 self._set_headers(400)
                 self.wfile.write('отсутствуют условия'.encode('utf-8'))
             else:
-                rez = storage.load_from_db(params)
+                rez = ApiEndpoint._storage.load_from_db(params)
                 if len(rez) == 0:
                     self._set_headers(404)
                     self.wfile.write('файл не найден'.encode('utf-8'))
                 else:
                     count = 0
                     for part in rez:
-                        storage.del_from_db(id=part[0])
+                        ApiEndpoint._storage.del_from_db(id=part[0])
                         self._delete_file_from_disk(part[0])
                         count += 1
                     self._set_headers(200)
@@ -186,6 +185,7 @@ class ApiEndpoint(BaseHTTPRequestHandler):
 def run(ip_addr: str, port: int) -> None:
     """запуск сервера с переданными параметрами"""
     server = HTTPServer((ip_addr, port), ApiEndpoint)
+    # _storage = SqlStorage('file_server')
     print('server started')
     server.serve_forever()
 

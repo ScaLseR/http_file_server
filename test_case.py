@@ -1,7 +1,6 @@
 """тесты для API server.py"""
 import unittest
 import re
-import os
 import time
 import requests as rq
 from jsonschema import validate
@@ -48,15 +47,10 @@ class TestApi(unittest.TestCase):#pylint: disable=too-many-public-methods
                 }
 
     def tearDown(self) -> None:
-        """чистка файлов и БД после теста"""
-        dirname = r"./"
-        files = os.listdir(dirname)
-        for file_name in files:
-            result = re.match(r'^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$|^\d+$', file_name)
-            if result:
-                os.remove(file_name)
-        if os.path.exists('file_server'):
-            os.remove('file_server')
+        response = rq.get(self.api_get)
+        response_body = response.json()
+        for file in response_body:
+            _ = rq.delete(self.api_delete, params={'id': file['id']})
 
     def test_api_upload_code_201(self):
         """api_upload код 201 при удачной загрузке файла"""
