@@ -47,6 +47,7 @@ class TestApi(unittest.TestCase):#pylint: disable=too-many-public-methods
                 }
 
     def tearDown(self) -> None:
+        """отчистка базы после теста"""
         response = rq.get(self.api_get)
         response_body = response.json()
         for file in response_body:
