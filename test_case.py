@@ -61,7 +61,7 @@ class TestApi(unittest.TestCase):#pylint: disable=too-many-public-methods
     def test_api_upload_code_201(self):
         """api_upload код 201 при удачной загрузке файла"""
         #test1
-        response = rq.post(self.api_upload, data="test1", params={'content-type': 'text/plain'})
+        response = rq.post(self.api_upload, data="test1")
         self.assertEqual(response.status_code, 201, "should be code 201")
 
     def test_api_upload_valid_json_schema(self):
@@ -83,8 +83,7 @@ class TestApi(unittest.TestCase):#pylint: disable=too-many-public-methods
         #test4
         response = rq.post(self.api_upload, params={'id': 4,
                                                     'name': 'test4',
-                                                    'tag': 'test',
-                                                    'content-type': 'text/plain'}, data="test4")
+                                                    'tag': 'test'}, data="test4")
         response_body = response.json()
         self.assertEqual(int(response_body[0]['id']), 4,
                          f"should be params['id'] = response_body['id'] "
@@ -102,8 +101,7 @@ class TestApi(unittest.TestCase):#pylint: disable=too-many-public-methods
         id и заполненным вручную именем файла name"""
         #test5
         response = rq.post(self.api_upload, params={'name': 'test5',
-                                                    'tag': 'test',
-                                                    'content-type': 'text/plain'}, data="test5")
+                                                    'tag': 'test'}, data="test5")
         response_body = response.json()
         result = re.match(r'^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$', response_body[0]['id'])
         generate_id = False
@@ -118,8 +116,7 @@ class TestApi(unittest.TestCase):#pylint: disable=too-many-public-methods
         """api_upload загрузка файла с автоматической генерацией
         id и не заполненным именем файла name, name = id"""
         #test6
-        response = rq.post(self.api_upload, params={'content-type': 'text/plain'},
-                           data="test6")
+        response = rq.post(self.api_upload, data="test6")
         response_body = response.json()
         self.assertEqual(response_body[0]['id'], response_body[0]['name'],
                          f"should be response_body['id'] = "
@@ -130,12 +127,11 @@ class TestApi(unittest.TestCase):#pylint: disable=too-many-public-methods
         перезапись существующего файла)"""
         #test7
         response_1 = rq.post(self.api_upload, params={'id': 7, 'name': 'test7',
-                                                      'tag': '123',
-                                                      'content-type': 'text/plain'}, data="test7")
+                                                      'tag': '123'}, data="test7")
         response_1_body = response_1.json()
         time.sleep(1)
         response_2 = rq.post(self.api_upload, params={'id': 7, 'name': 'test7_new',
-                                                      'tag': '321', 'content-type': 'text/plain'},
+                                                      'tag': '321'},
                              data="test7_new")
         response_2_body = response_2.json()
         response_get_new_file = rq.get(self.api_download, params={'id': 7})
@@ -150,14 +146,11 @@ class TestApi(unittest.TestCase):#pylint: disable=too-many-public-methods
     def test_api_upload_files_eq_name(self):
         """api_upload загрузка нескольких файлов с одинаковым name и tag"""
         # test7_2
-        _ = rq.post(self.api_upload, params={'name': 'test7_2',
-                                             'content-type': 'text/plain', 'tag': 'test'},
+        _ = rq.post(self.api_upload, params={'name': 'test7_2', 'tag': 'test'},
                     data="test7_2")
-        _ = rq.post(self.api_upload, params={'name': 'test7_2',
-                                             'content-type': 'text/plain', 'tag': 'test'},
+        _ = rq.post(self.api_upload, params={'name': 'test7_2', 'tag': 'test'},
                     data="test7_2")
-        _ = rq.post(self.api_upload, params={'name': 'test7_2',
-                                             'content-type': 'text/plain', 'tag': 'test'},
+        _ = rq.post(self.api_upload, params={'name': 'test7_2', 'tag': 'test'},
                     data="test7_2")
         response = rq.get(self.api_get)
         response_body = response.json()
@@ -166,16 +159,14 @@ class TestApi(unittest.TestCase):#pylint: disable=too-many-public-methods
     def test_api_get_code_200(self):
         """api_get код ответа 200 при получении выборки файла"""
         #test8
-        _ = rq.post(self.api_upload, params={'id': 8, 'name': 'test8',
-                                             'content-type': 'text/plain'}, data="test8")
+        _ = rq.post(self.api_upload, params={'id': 8, 'name': 'test8'}, data="test8")
         response = rq.get(self.api_get)
         self.assertEqual(response.status_code, 200, "should be code 200")
 
     def test_api_get_valid_json_schema(self):
         """api_get соответствие схеме ответа json"""
         #test9
-        _ = rq.post(self.api_upload, params={'id': 9, 'name': 'test9',
-                                             'content-type': 'text/plain'}, data="test9")
+        _ = rq.post(self.api_upload, params={'id': 9, 'name': 'test9'}, data="test9")
         response = rq.get(self.api_get)
         response_body = response.json()
         validate(response_body, self.valid_json_schema)
@@ -186,15 +177,14 @@ class TestApi(unittest.TestCase):#pylint: disable=too-many-public-methods
         #test10
         _ = rq.post(self.api_upload, params={'id': 10,
                                              'name': 'test10_1',
-                                             'tag': 'test', 'content-type': 'text/plain'},
+                                             'tag': 'test'},
                     data="test10_1")
         _ = rq.post(self.api_upload, params={'id': 10_2,
-                                             'name': 'test10_2', 'content-type': 'text/plain'},
+                                             'name': 'test10_2'},
                     data="test10_2")
-        _ = rq.post(self.api_upload, params={'id': 10_3, 'content-type': 'text/plain'},
+        _ = rq.post(self.api_upload, params={'id': 10_3},
                     data="test10_3")
-        _ = rq.post(self.api_upload,  params={'content-type': 'text/plain'},
-                    data="test10_4")
+        _ = rq.post(self.api_upload, data="test10_4")
         response = rq.get(self.api_get)
         response_body = response.json()
         self.assertEqual(len(response_body), 4, "should be 4")
@@ -204,13 +194,13 @@ class TestApi(unittest.TestCase):#pylint: disable=too-many-public-methods
         #test11
         _ = rq.post(self.api_upload, params={'id': 11,
                                              'name': 'test11',
-                                             'tag': 'test', 'content-type': 'text/plain'},
+                                             'tag': 'test'},
                     data="test11_1")
         _ = rq.post(self.api_upload, params={'id': 11_2,
-                                             'name': 'test10', 'content-type': 'text/plain'},
+                                             'name': 'test10'},
                     data="test11_2")
         _ = rq.post(self.api_upload, params={'id': 11_3,
-                                             'name': 'test11', 'content-type': 'text/plain'},
+                                             'name': 'test11'},
                     data="test11_3")
         response = rq.get(self.api_get, params={'id': [11, 11_2, 11_3], 'name': 'test11'})
         response_body = response.json()
@@ -229,7 +219,7 @@ class TestApi(unittest.TestCase):#pylint: disable=too-many-public-methods
         #test13
         _ = rq.post(self.api_upload, params={'id': 13,
                                              'name': 'test13',
-                                             'tag': 'test', 'content-type': 'text/plain'},
+                                             'tag': 'test'},
                     data="test13")
         response = rq.delete(self.api_delete, params={'id': 13})
         self.assertEqual(response.status_code, 200, "should be code 200")
@@ -240,14 +230,11 @@ class TestApi(unittest.TestCase):#pylint: disable=too-many-public-methods
         #test14
         _ = rq.post(self.api_upload, params={'id': 14,
                                              'name': 'test14',
-                                             'tag': 'test', 'content-type': 'text/plain'},
+                                             'tag': 'test'},
                     data="test14")
-        _ = rq.post(self.api_upload, params={'id': 14_2, 'name': 'test14_2',
-                                             'content-type': 'text/plain'}, data="test14_2")
-        _ = rq.post(self.api_upload, params={'id': 14_3, 'name': 'test14_3',
-                                             'content-type': 'text/plain'}, data="test14_3")
-        _ = rq.post(self.api_upload, params={'id': 14_4, 'name': 'test14',
-                                             'content-type': 'text/plain'}, data="test14_4")
+        _ = rq.post(self.api_upload, params={'id': 14_2, 'name': 'test14_2'}, data="test14_2")
+        _ = rq.post(self.api_upload, params={'id': 14_3, 'name': 'test14_3'}, data="test14_3")
+        _ = rq.post(self.api_upload, params={'id': 14_4, 'name': 'test14'}, data="test14_4")
         response = rq.delete(self.api_delete, params={'id': [14, 14_2, 14_3, 14_4],
                                                       'name': 'test14'})
         self.assertEqual(response.status_code, 200, "should be code 200")
@@ -278,7 +265,7 @@ class TestApi(unittest.TestCase):#pylint: disable=too-many-public-methods
         #test18
         _ = rq.post(self.api_upload, params={'id': 18,
                                              'name': 'test18',
-                                             'tag': 'test', 'content-type': 'text/plain'},
+                                             'tag': 'test'},
                     data="test1818")
         response = rq.get(self.api_download, params={'id': 18})
         self.assertEqual(response.status_code, 200, "should be code 200")
@@ -289,7 +276,7 @@ class TestApi(unittest.TestCase):#pylint: disable=too-many-public-methods
         #test19
         _ = rq.post(self.api_upload, params={'id': 19,
                                              'name': 'test19.txt',
-                                             'tag': 'test', 'content-type': 'text/plain'},
+                                             'tag': 'test'},
                     data="test1919")
         response = rq.get(self.api_download, params={'id': 19})
         response_header_cd = response.headers['Content-Disposition']
@@ -303,8 +290,7 @@ class TestApi(unittest.TestCase):#pylint: disable=too-many-public-methods
         # test20
         _ = rq.post(self.api_upload, params={'id': 20,
                                              'name': 'test20',
-                                             'tag': 'test', 'content-type':
-                                                 'text/plain'}, data="test2020")
+                                             'tag': 'test'}, data="test2020")
         response = rq.get(self.api_download, params={'id': 20})
         self.assertEqual(response.headers['Content-Type'],
                          'text/plain', "should be 'text/plain'")
