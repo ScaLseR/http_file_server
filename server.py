@@ -2,6 +2,7 @@
 import json
 import uuid
 import os
+import magic
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
 from datetime import datetime
@@ -131,11 +132,16 @@ class ApiEndpoint(BaseHTTPRequestHandler):
                 tag = ''
             else:
                 tag = params['tag'][0]
+            # получаем тело файла и сохраняем на диск
+            content_size = int(self.headers.get('content-length'))
+            post_body = self.rfile.read(content_size)
             if not params.get('content-type'):
                 mime_type = self.headers.get('content-type')
+                if not mime_type:
+                    mime_type = magic.from_buffer(post_body, mime=True)
             else:
                 mime_type = params['content-type'][0]
-            content_size = int(self.headers.get('content-length'))
+            #content_size = int(self.headers.get('content-length'))
             modification_time = self._date_time_str()
             # сохраняем все параметры загруженного файла в базу
             if upd:
@@ -143,7 +149,7 @@ class ApiEndpoint(BaseHTTPRequestHandler):
             else:
                 storage.save_to_db(ids, name, tag, content_size, mime_type, modification_time)
             # получаем тело файла и сохраняем на диск
-            post_body = self.rfile.read(content_size)
+            #post_body = self.rfile.read(content_size)
             self._save_file_to_disk(ids, post_body)
             # создаем json обьект и возвращаем клиенту
             find = {'id': [ids]}
