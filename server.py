@@ -1,17 +1,18 @@
 """HTTP server"""
 import json
 import uuid
-import os
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
 from datetime import datetime
 import magic
 from sql_db import SqlStorage
+from file_operation import FileOperation
 
 
 class ApiEndpoint(BaseHTTPRequestHandler):
     """класс дял получения и обработки запросов на ендпоинты"""
     _storage = SqlStorage('file_server')
+    _file = FileOperation()
 
     def _set_headers(self, id_response: int) -> None:
         """формирование хедера с указанным статусом ответа"""
@@ -24,26 +25,6 @@ class ApiEndpoint(BaseHTTPRequestHandler):
         """получение текущего времени и даты в формате str"""
         now = datetime.now()
         return now.strftime("%Y-%m-%d %H:%M:%S")
-
-    @staticmethod
-    def _save_file_to_disk(name: str, body: bytes) -> None:
-        """запись файла на диск"""
-        with open(name, mode="wb") as file:
-            file.write(body)
-
-    @staticmethod
-    def _load_file_from_disk(name: str) -> bytes:
-        """загрузка файла с диска"""
-        with open(name, mode="rb") as file:
-            body = file.read()
-        return body
-
-    @staticmethod
-    def _delete_file_from_disk(name: str) -> None:
-        """удаление файла с диска"""
-        path = os.path.join(os.path.abspath(os.path.dirname(__file__)), name)
-        os.remove(path)
-        print(name + ' файл удален')
 
     @staticmethod
     def _create_dict(data: list) -> list:
@@ -96,7 +77,7 @@ class ApiEndpoint(BaseHTTPRequestHandler):
                     self.send_header('Content-Disposition: attachment; filename=', data[0][1])
                     self.send_header('Content-length', data[0][3])
                     self.end_headers()
-                    body = self._load_file_from_disk(data[0][0])
+                    body = ApiEndpoint._file.load_file_from_disk(data[0][0])
                     self.wfile.write(body)
                     print('файл ' + data[0][1] + ' отправлен')
 
@@ -130,7 +111,7 @@ class ApiEndpoint(BaseHTTPRequestHandler):
             # получаем тело файла и сохраняем на диск
             content_size = int(self.headers.get('content-length'))
             post_body = self.rfile.read(content_size)
-            self._save_file_to_disk(ids, post_body)
+            ApiEndpoint._file.save_file_to_disk(ids, post_body)
             if not params.get('content-type'):
                 mime_type = self.headers.get('content-type')
                 if not mime_type:
@@ -170,7 +151,7 @@ class ApiEndpoint(BaseHTTPRequestHandler):
                     count = 0
                     for part in rez:
                         ApiEndpoint._storage.del_from_db(id=part[0])
-                        self._delete_file_from_disk(part[0])
+                        ApiEndpoint._file.delete_file_from_disk(part[0])
                         count += 1
                     self._set_headers(200)
                     self.wfile.write((str(count) + ' files deleted').encode('utf-8'))
