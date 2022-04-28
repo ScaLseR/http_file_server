@@ -70,7 +70,6 @@ class SqlStorage:
         find_data = self._gef_find_string(data)
         cursor = self._connection.cursor()
         cursor.execute("select * from fileserver where " + find_data)
-        print(find_data)
         result = cursor.fetchall()
         self._connection.commit()
         return result

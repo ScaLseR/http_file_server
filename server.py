@@ -26,12 +26,6 @@ class ApiEndpoint(BaseHTTPRequestHandler):
         return now.strftime("%Y-%m-%d %H:%M:%S")
 
     @staticmethod
-    def _create_json(data: list) -> json:
-        """создание обьекта json из словаря"""
-        str_json = json.dumps(data, indent=2)
-        return str_json
-
-    @staticmethod
     def _save_file_to_disk(name: str, body: bytes) -> None:
         """запись файла на диск"""
         with open(name, mode="wb") as file:
@@ -69,16 +63,18 @@ class ApiEndpoint(BaseHTTPRequestHandler):
             if len(params) == 0 or ('id' not in params) and ('name' not in params) \
                     and ('tag' not in params):
                 rez = ApiEndpoint._storage.load_from_db({})
-                rez_list = self._create_dict(rez)
-                self._set_headers(200)
-                rez_json = self._create_json(rez_list)
-                self.wfile.write(rez_json.encode('utf-8'))
             else:
+                #если есть параметры то делаем запрос в базу
                 rez = ApiEndpoint._storage.load_from_db(params)
-                rez_list = self._create_dict(rez)
-                self._set_headers(200)
-                rez_json = self._create_json(rez_list)
-                self.wfile.write(rez_json.encode('utf-8'))
+            rez_list = self._create_dict(rez)
+            if len(rez_list) == 1:
+                rez_json = json.dumps(rez_list[0])
+            else:
+                rez_json = json.dumps(rez_list)
+            self._set_headers(200)
+            if len(rez_json) == 2:
+                rez_json = json.dumps({})
+            self.wfile.write(rez_json.encode('utf-8'))
         # обрабатываем api/download
         if self.path.startswith('/api/download'):
             params = parse_qs(urlparse(self.path).query)
@@ -153,7 +149,7 @@ class ApiEndpoint(BaseHTTPRequestHandler):
             find = {'id': [ids]}
             rez = ApiEndpoint._storage.load_from_db(find)
             time_dict = self._create_dict(rez)
-            rez_json = self._create_json(time_dict)
+            rez_json = json.dumps(time_dict[0])
             self._set_headers(201)
             self.wfile.write(rez_json.encode('utf-8'))
 
