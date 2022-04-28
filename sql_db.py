@@ -1,19 +1,19 @@
-"""работа с БД sqlite3"""
+"""sqlite3 database operation"""
 import sqlite3
 
 
 class SqlStorage:
-    """класс создания и работы с БД sqlite3"""
+    """сlass for creating and working with the database sqlite3"""
     _PARAMS = ['id', 'name', 'tag']
 
     def __init__(self, db_name='DefaultName'):
-        """присваиваем имя нашей БД, настраиваем коннект"""
+        """name our database, set up a connection"""
         self._db_name = db_name
         self._connection = sqlite3.connect(self._db_name)
         self._cr_table()
 
     def _cr_table(self) -> None:
-        """если таблицы нет - создаем, если уже есть то пропускаем"""
+        """If there is no table - create it, if there is already - skip it"""
         cursor = self._connection.cursor()
         cursor.execute('create table if not exists fileserver(id text, name text, '
                        'tag text, size int, mimeType text, modificationTime text , unique(id))')
@@ -21,7 +21,7 @@ class SqlStorage:
 
     @staticmethod
     def _gef_find_string(data: dict) -> str:
-        """упаковываем полученный словарь в выражение для SQL"""
+        """pack the resulting dictionary into an expression for SQL"""
         keys = list(data.keys())
         rez_str = ''
         for key in keys:
@@ -41,7 +41,7 @@ class SqlStorage:
 
     def save_to_db(self, ids: str, name: str, tag: str, size: int,#pylint: disable=too-many-arguments
                    mime_type: str, modification_time: str) -> None:
-        """сохраняем в базу параметры файла"""
+        """save file parameters to the database"""
         cursor = self._connection.cursor()
         cursor.execute('insert into fileserver(id, name, tag, size, mimeType,'
                        ' modificationTime) values (?, ?, ?, ?, ?, ?)',
@@ -50,7 +50,7 @@ class SqlStorage:
 
     def update_to_db(self, ids: str, name: str, tag: str, size: int,#pylint: disable=too-many-arguments
                      mime_type: str, modification_time: str) -> None:
-        """update если в базе уже есть такой файл"""
+        """update if there is already such a file in the database"""
         cursor = self._connection.cursor()
         cursor.execute(f"update fileserver set name='{name}', tag='{tag}', size='{str(size)}',"
                        f" mimeType='{mime_type}', modificationTime='{modification_time}' "
@@ -58,7 +58,7 @@ class SqlStorage:
         self._connection.commit()
 
     def load_from_db(self, data: dict) -> list:
-        """получаем из базы файлы соответствующие условиям"""
+        """Get the files that meet the conditions from the database"""
         if len(data) == 0:
             #если в запросе нет параметров возвращаем все значения из таблицы
             cursor = self._connection.cursor()
@@ -75,7 +75,7 @@ class SqlStorage:
         return result
 
     def del_from_db(self, **kwargs) -> None:
-        """удаляем запись из базы"""
+        """remove the record from the database"""
         cursor = self._connection.cursor()
         cursor.execute(f"delete from fileserver where id ='{kwargs['id']}'")
         self._connection.commit()

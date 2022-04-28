@@ -1,9 +1,9 @@
 """HTTP server"""
-import json
 import uuid
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
 from datetime import datetime
+from json import dumps
 import magic
 from sql_db import SqlStorage
 from file_operation import FileOperation
@@ -49,12 +49,12 @@ class ApiEndpoint(BaseHTTPRequestHandler):
                 rez = ApiEndpoint._storage.load_from_db(params)
             rez_list = self._create_dict(rez)
             if len(rez_list) == 1:
-                rez_json = json.dumps(rez_list[0])
+                rez_json = dumps(rez_list[0])
             else:
-                rez_json = json.dumps(rez_list)
+                rez_json = dumps(rez_list)
             self._set_headers(200)
             if len(rez_json) == 2:
-                rez_json = json.dumps({})
+                rez_json = dumps({})
             self.wfile.write(rez_json.encode('utf-8'))
         # обрабатываем api/download
         if self.path.startswith('/api/download'):
@@ -130,7 +130,7 @@ class ApiEndpoint(BaseHTTPRequestHandler):
             find = {'id': [ids]}
             rez = ApiEndpoint._storage.load_from_db(find)
             time_dict = self._create_dict(rez)
-            rez_json = json.dumps(time_dict[0])
+            rez_json = dumps(time_dict[0])
             self._set_headers(201)
             self.wfile.write(rez_json.encode('utf-8'))
 

@@ -1,23 +1,26 @@
-"""операции с файлами"""
+"""file operations"""
 import os
 
 
 class FileOperation:
-    """методы работы с файлами"""
+    """methods for working with files"""
 
-    def save_file_to_disk(self, name: str, body: bytes) -> None:
-        """запись файла на диск"""
+    @staticmethod
+    def save_file_to_disk(name: str, body: bytes) -> None:
+        """writing file to disk"""
         with open(name, mode="wb") as file:
             file.write(body)
 
-    def load_file_from_disk(self, name: str) -> bytes:
-        """загрузка файла с диска"""
+    @staticmethod
+    def load_file_from_disk(name: str) -> bytes:
+        """downloading file from disk"""
         with open(name, mode="rb") as file:
             body = file.read()
         return body
 
-    def delete_file_from_disk(self, name: str) -> None:
-        """удаление файла с диска"""
+    @staticmethod
+    def delete_file_from_disk(name: str) -> None:
+        """deleting file from disk"""
         path = os.path.join(os.path.abspath(os.path.dirname(__file__)), name)
         os.remove(path)
-        print(name + ' файл удален')
+        print(name + ' - file deleted')

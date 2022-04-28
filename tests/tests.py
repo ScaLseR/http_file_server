@@ -3,13 +3,15 @@ from http_connector import ConnectorHttp
 
 
 class EmptyStorageTests(TestCase):
-    """тесты для пустой базы """
+    """empty storage tests"""
 
     @classmethod
     def setUpClass(cls) -> None:
+        """setup for class"""
         cls.fch = ConnectorHttp('http://127.0.0.1:9876')
 
     def tearDown(self) -> None:
+        """teardown for tests"""
         result = self.fch.get_without_params()
         for ids in result:
             self.fch.delete_by_id(ids['id'])
@@ -27,29 +29,31 @@ class EmptyStorageTests(TestCase):
         self.assertEqual(self.fch.delete_by_id('11'), '1 files deleted')
 
 
-
-
 class OneFileStorageTests(TestCase):
-    """тесты для базы содержащей 1 файл"""
+    """one file storage tests"""
 
     @classmethod
     def setUpClass(cls) -> None:
+        """setup for class"""
         cls.fch = ConnectorHttp('http://127.0.0.1:9876')
 
     def tearDown(self) -> None:
+        """teardown for tests"""
         result = self.fch.get_without_params()
         for ids in result:
             self.fch.delete_by_id(ids['id'])
 
 
 class ManyFilesStorageTests(TestCase):
-    """тесты для базы содержащей большое количество файлов"""
+    """many files storage tests"""
 
     @classmethod
     def setUpClass(cls) -> None:
+        """setup for class"""
         cls.fch = ConnectorHttp('http://127.0.0.1:9876')
 
     def tearDown(self) -> None:
+        """teardown for tests"""
         result = self.fch.get_without_params()
         for ids in result:
             self.fch.delete_by_id(ids['id'])
