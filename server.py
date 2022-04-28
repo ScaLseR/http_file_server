@@ -6,13 +6,12 @@ from datetime import datetime
 from json import dumps
 import magic
 from sql_db import SqlStorage
-from file_operation import FileOperation
+from file_operation import save_file_to_disk, load_file_from_disk, delete_file_from_disk
 
 
 class ApiEndpoint(BaseHTTPRequestHandler):
     """class for receiving and processing requests for enddpoints"""
     _storage = SqlStorage('file_server')
-    _file = FileOperation()
 
     def _set_headers(self, id_response: int) -> None:
         """forming a header with the specified response status"""
@@ -77,7 +76,7 @@ class ApiEndpoint(BaseHTTPRequestHandler):
                     self.send_header('Content-Disposition: attachment; filename=', data[0][1])
                     self.send_header('Content-length', data[0][3])
                     self.end_headers()
-                    body = ApiEndpoint._file.load_file_from_disk(data[0][0])
+                    body = load_file_from_disk(data[0][0])
                     self.wfile.write(body)
                     print('файл ' + data[0][1] + ' отправлен')
 
@@ -111,7 +110,7 @@ class ApiEndpoint(BaseHTTPRequestHandler):
             # получаем тело файла и сохраняем на диск
             content_size = int(self.headers.get('content-length'))
             post_body = self.rfile.read(content_size)
-            ApiEndpoint._file.save_file_to_disk(ids, post_body)
+            save_file_to_disk(ids, post_body)
             if not params.get('content-type'):
                 mime_type = self.headers.get('content-type')
                 if not mime_type:
@@ -151,7 +150,7 @@ class ApiEndpoint(BaseHTTPRequestHandler):
                     count = 0
                     for part in rez:
                         ApiEndpoint._storage.del_from_db(id=part[0])
-                        ApiEndpoint._file.delete_file_from_disk(part[0])
+                        delete_file_from_disk(part[0])
                         count += 1
                     self._set_headers(200)
                     self.wfile.write((str(count) + ' files deleted').encode('utf-8'))
