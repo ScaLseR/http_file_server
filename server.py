@@ -10,19 +10,19 @@ from file_operation import FileOperation
 
 
 class ApiEndpoint(BaseHTTPRequestHandler):
-    """класс дял получения и обработки запросов на ендпоинты"""
+    """class for receiving and processing requests for enddpoints"""
     _storage = SqlStorage('file_server')
     _file = FileOperation()
 
     def _set_headers(self, id_response: int) -> None:
-        """формирование хедера с указанным статусом ответа"""
+        """forming a header with the specified response status"""
         self.send_response(id_response)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
 
     @staticmethod
     def _date_time_str() -> str:
-        """получение текущего времени и даты в формате str"""
+        """get the current time and date in the format: str"""
         now = datetime.now()
         return now.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -36,7 +36,7 @@ class ApiEndpoint(BaseHTTPRequestHandler):
         return main_list
 
     def do_GET(self):  # pylint: disable=invalid-name
-        """отработка запросов GET на ендпоинты /api/get и /api/download"""
+        """processing GET requests to endpoints /api/get and /api/download"""
         # обрабатываем api/get
         if self.path.startswith('/api/get'):
             params = parse_qs(urlparse(self.path).query)
@@ -82,7 +82,7 @@ class ApiEndpoint(BaseHTTPRequestHandler):
                     print('файл ' + data[0][1] + ' отправлен')
 
     def do_POST(self):  # pylint: disable=invalid-name, too-many-locals
-        """отработка запросов POST на ендпоинт /api/upload"""
+        """processing POST requests to endpoint /api/upload"""
         upd = False
         if self.path.startswith('/api/upload'):
             params = parse_qs(urlparse(self.path).query)
@@ -135,7 +135,7 @@ class ApiEndpoint(BaseHTTPRequestHandler):
             self.wfile.write(rez_json.encode('utf-8'))
 
     def do_DELETE(self):  # pylint: disable=invalid-name
-        """отработка запроса DELETE на ендпоинт /api/delete"""
+        """DELETE request processing on the endpoint /api/delete"""
         if self.path.startswith('/api/delete'):
             params = parse_qs(urlparse(self.path).query)
             if len(params) == 0 or ('id' not in params) and ('name' not in params) \
@@ -158,7 +158,7 @@ class ApiEndpoint(BaseHTTPRequestHandler):
 
 
 def run(ip_addr: str, port: int) -> None:
-    """запуск сервера с переданными параметрами"""
+    """running the server with the passed parameters"""
     server = HTTPServer((ip_addr, port), ApiEndpoint)
     print('server started')
     server.serve_forever()
