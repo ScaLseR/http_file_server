@@ -59,7 +59,7 @@ class ApiEndpoint(BaseHTTPRequestHandler):
                 rez_json = dumps({})
             self.wfile.write(rez_json.encode('utf-8'))
         # обрабатываем api/download
-        if self.path.startswith('/api/download'):
+        elif self.path.startswith('/api/download'):
             params = parse_qs(urlparse(self.path).query)
             # если нет параметров выводим 400 ошибку
             if len(params) == 0 or ('id' not in params):
@@ -82,6 +82,8 @@ class ApiEndpoint(BaseHTTPRequestHandler):
                     body = load_file_from_disk(data[0][0])
                     self.wfile.write(body)
                     print('файл ' + data[0][1] + ' отправлен')
+        else:
+            self._set_headers(501)
 
     def do_POST(self):  # pylint: disable=invalid-name, too-many-locals
         """processing POST requests to endpoint /api/upload"""
@@ -135,6 +137,8 @@ class ApiEndpoint(BaseHTTPRequestHandler):
             rez_json = dumps(time_dict[0])
             self._set_headers(201)
             self.wfile.write(rez_json.encode('utf-8'))
+        else:
+            self._set_headers(501)
 
     def do_DELETE(self):  # pylint: disable=invalid-name
         """DELETE request processing on the endpoint /api/delete"""
@@ -148,7 +152,6 @@ class ApiEndpoint(BaseHTTPRequestHandler):
                 rez = ApiEndpoint._storage.load_from_db(params)
                 if len(rez) == 0:
                     self._set_headers(200, '0 files deleted')
-                    #self.wfile.write('файл не найден'.encode('utf-8'))
                 else:
                     count = 0
                     for part in rez:
@@ -156,7 +159,9 @@ class ApiEndpoint(BaseHTTPRequestHandler):
                         delete_file_from_disk(part[0])
                         count += 1
                     self._set_headers(200, str(count) + ' files deleted')
-                    #self.wfile.write((str(count) + ' files deleted').encode('utf-8'))
+                    self.wfile.write((str(count) + ' files deleted').encode('utf-8'))
+        else:
+            self._set_headers(501)
 
 
 def run(ip_addr: str, port: int) -> None:
