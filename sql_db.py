@@ -4,7 +4,7 @@ import sqlite3
 
 class SqlStorage:
     """сlass for creating and working with the database sqlite3"""
-    _PARAMS = ['id', 'name', 'tag']
+    _PARAMS = ['id', 'name', 'tag', 'mimeType', 'modificationTime']
 
     def __init__(self, db_name='DefaultName'):
         """name our database, set up a connection"""
