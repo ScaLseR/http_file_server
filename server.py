@@ -13,9 +13,12 @@ class ApiEndpoint(BaseHTTPRequestHandler):
     """class for receiving and processing requests for enddpoints"""
     _storage = SqlStorage('file_server')
 
-    def _set_headers(self, id_response: int) -> None:
+    def _set_headers(self, *args) -> None:
         """forming a header with the specified response status"""
-        self.send_response(id_response)
+        if len(args) == 1:
+            self.send_response(args[0])
+        else:
+            self.send_response(args[0], args[1])
         self.send_header('Content-type', 'text/html')
         self.end_headers()
 
@@ -61,7 +64,7 @@ class ApiEndpoint(BaseHTTPRequestHandler):
             # если нет параметров выводим 400 ошибку
             if len(params) == 0 or ('id' not in params):
                 self._set_headers(400)
-                self.wfile.write('отсутствуют уловия'.encode('utf-8'))
+                self.wfile.write('отсутствуют уcловия'.encode('utf-8'))
             else:
                 find = {'id': [params['id'][0]]}
                 data = ApiEndpoint._storage.load_from_db(find)
@@ -144,16 +147,16 @@ class ApiEndpoint(BaseHTTPRequestHandler):
             else:
                 rez = ApiEndpoint._storage.load_from_db(params)
                 if len(rez) == 0:
-                    self._set_headers(404)
-                    self.wfile.write('файл не найден'.encode('utf-8'))
+                    self._set_headers(200, '0 files deleted')
+                    #self.wfile.write('файл не найден'.encode('utf-8'))
                 else:
                     count = 0
                     for part in rez:
                         ApiEndpoint._storage.del_from_db(id=part[0])
                         delete_file_from_disk(part[0])
                         count += 1
-                    self._set_headers(200)
-                    self.wfile.write((str(count) + ' files deleted').encode('utf-8'))
+                    self._set_headers(200, str(count) + ' files deleted')
+                    #self.wfile.write((str(count) + ' files deleted').encode('utf-8'))
 
 
 def run(ip_addr: str, port: int) -> None:
