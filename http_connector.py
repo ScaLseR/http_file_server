@@ -42,10 +42,12 @@ def request_preparation(base_url, endpoint):
                            headers=headers, params=params, data=data)
         print('response= ', response)
         print('response.status_code= ', response.status_code)
+        print('soobschenie status code= ', response.reason)
         print('response.headers= ', response.headers)
         print('response.content= ', response.content)
         response.raise_for_status()
-        return response.content.decode('utf-8')
+        #return response.content.decode('utf-8')
+        return response
     return make_request
 
 
@@ -66,7 +68,7 @@ class ConnectorHttp:
         """get file by params"""
         response = self._get({'id': id, 'name': name, 'tag': tag,
                               'mimeType': mimetype, 'modificationTime': modificationtime})
-        return loads(response)
+        return loads(response.content.decode('utf-8'))
 
     def get_by_faulty_param(self, id='', name='', tag='', mimetype='',
                                 modificationtime='', param=''):
@@ -74,10 +76,11 @@ class ConnectorHttp:
         response = self._get({'id': id, 'name': name, 'tag': tag,
                              'mimeType': mimetype,
                               'modificationTime': modificationtime, 'count': param})
-        return loads(response)
+        return loads(response.content.decode('utf-8'))
 
     def delete_by_param(self, id='', name='', tag='', mimetype='', modificationtime=''):
         """delete file by id"""
-        return self._delete({'id': id, 'name': name, 'tag': tag,
+        response = self._delete({'id': id, 'name': name, 'tag': tag,
                              'mimeType': mimetype, 'modificationTime': modificationtime})
+        return response.content.decode('utf-8')
 

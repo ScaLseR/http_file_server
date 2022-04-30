@@ -44,7 +44,8 @@ class ApiEndpoint(BaseHTTPRequestHandler):
             params = parse_qs(urlparse(self.path).query)
             # если нет параметров то выводим все файлы
             if len(params) == 0 or ('id' not in params) and ('name' not in params) \
-                    and ('tag' not in params):
+                    and ('tag' not in params) and ('mimeType' not in params) \
+                    and ('modificationTime' not in params):
                 rez = ApiEndpoint._storage.load_from_db({})
             else:
                 #если есть параметры то делаем запрос в базу
@@ -144,14 +145,17 @@ class ApiEndpoint(BaseHTTPRequestHandler):
         """DELETE request processing on the endpoint /api/delete"""
         if self.path.startswith('/api/delete'):
             params = parse_qs(urlparse(self.path).query)
+            print(params)
             if len(params) == 0 or ('id' not in params) and ('name' not in params) \
-                    and ('tag' not in params):
+                    and ('tag' not in params) and ('mimetype' not in params) \
+                    and ('modificationtime' not in params):
                 self._set_headers(400)
                 self.wfile.write('отсутствуют условия'.encode('utf-8'))
             else:
                 rez = ApiEndpoint._storage.load_from_db(params)
                 if len(rez) == 0:
                     self._set_headers(200, '0 files deleted')
+                    self.wfile.write('0 files deleted'.encode('utf-8'))
                 else:
                     count = 0
                     for part in rez:

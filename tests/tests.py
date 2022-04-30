@@ -90,7 +90,23 @@ class EmptyStorageTests(TestCase):
 
     #11
     def test_delete_by_id(self):
-        self.assertEqual(self.fch.delete_by_param(id='11'), {})
+        self.assertEqual(self.fch.delete_by_param(id='11'), '0 files deleted')
+
+    #12
+    def test_delete_by_name(self):
+        self.assertEqual(self.fch.delete_by_param(name='test12'), '0 files deleted')
+
+    #13
+    def test_delete_by_tag(self):
+        self.assertEqual(self.fch.delete_by_param(tag='test'), '0 files deleted')
+
+    #13_2
+    def test_delete_by_mimetype(self):
+        self.assertEqual(self.fch.delete_by_param(mimetype='text/plain'), '0 files deleted')
+
+
+
+
 
 
 class OneFileStorageTests(TestCase):
@@ -103,9 +119,9 @@ class OneFileStorageTests(TestCase):
 
     def tearDown(self) -> None:
         """teardown for tests"""
-        result = self.fch.get_without_params()
+        result = self.fch.get_by_param()
         for ids in result:
-            self.fch.delete_by_params(id=ids['id'])
+            self.fch.delete_by_param(id=ids['id'])
 
 
 class ManyFilesStorageTests(TestCase):
@@ -118,6 +134,6 @@ class ManyFilesStorageTests(TestCase):
 
     def tearDown(self) -> None:
         """teardown for tests"""
-        result = self.fch.get_without_params()
+        result = self.fch.get_by_param()
         for ids in result:
-            self.fch.delete_by_params(id=ids['id'])
+            self.fch.delete_by_param(id=ids['id'])
