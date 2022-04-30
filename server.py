@@ -44,8 +44,8 @@ class ApiEndpoint(BaseHTTPRequestHandler):
             params = parse_qs(urlparse(self.path).query)
             # если нет параметров то выводим все файлы
             if len(params) == 0 or ('id' not in params) and ('name' not in params) \
-                    and ('tag' not in params) and ('mimeType' not in params) \
-                    and ('modificationTime' not in params):
+                    and ('tag' not in params) and ('mimetype' not in params) \
+                    and ('modificationtime' not in params):
                 rez = ApiEndpoint._storage.load_from_db({})
             else:
                 #если есть параметры то делаем запрос в базу
@@ -65,7 +65,7 @@ class ApiEndpoint(BaseHTTPRequestHandler):
             # если нет параметров выводим 400 ошибку
             if len(params) == 0 or ('id' not in params):
                 self._set_headers(400)
-                self.wfile.write('отсутствуют уcловия'.encode('utf-8'))
+                self.wfile.write('отсутствуют условия'.encode('utf-8'))
             else:
                 find = {'id': [params['id'][0]]}
                 data = ApiEndpoint._storage.load_from_db(find)
