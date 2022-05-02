@@ -40,16 +40,7 @@ def request_preparation(base_url, endpoint):
     def make_request(params=None, headers=None, data=None):
         response = request(method=method, url=url,
                            headers=headers, params=params, data=data)
-        # print('111response= ', response)
-        # print('111response.status_code= ', response.status_code)
-        # print('111soobschenie status code= ', response.reason)
-        # print('111response.headers= ', response.headers)
-        # print('111response.content= ', response.content.decode('utf-8'))
         # #response.raise_for_status()
-        #
-        # print('2222soobschenie status code= ', response.reason)
-        # print('2222response.headers= ', response.headers)
-        # print('2222response.content= ', response.content.decode('utf-8'))
         #return response.content.decode('utf-8')
         return response
     return make_request
@@ -77,15 +68,19 @@ class ConnectorHttp:
         response = self._download()
         return response.status_code, response.content.decode('utf-8')
 
-    def get_by_param(self, id='', name='', tag='', mimetype='', modificationtime='', param=''):
+    def download_check_param(self, id=''):
+        """download check wile output parameters"""
+        return self._download({'id': id}).headers
+
+    def get_by_param(self, id='', name='', tag='', size='', mimetype='', modificationtime='', param=''):
         """get file by parameters"""
-        response = self._get({'id': id, 'name': name, 'tag': tag,
+        response = self._get({'id': id, 'name': name, 'tag': tag, 'size': size,
                               'mimetype': mimetype, 'modificationtime': modificationtime, 'param': param})
         return loads(response.content.decode('utf-8'))
 
-    def delete_by_param(self, id='', name='', tag='', mimetype='', modificationtime='', param=''):
+    def delete_by_param(self, id='', name='', tag='', size='', mimetype='', modificationtime='', param=''):
         """delete file by parameters"""
-        response = self._delete({'id': id, 'name': name, 'tag': tag,
+        response = self._delete({'id': id, 'name': name, 'tag': tag, 'size': size,
                              'mimetype': mimetype, 'modificationtime': modificationtime, 'param': param})
         if response.status_code == 200:
             return response.content.decode('utf-8')
