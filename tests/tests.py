@@ -1,3 +1,4 @@
+"""tests for api """
 from unittest.case import TestCase
 from http_connector import ConnectorHttp
 
@@ -28,30 +29,37 @@ class EmptyStorageTests(TestCase):
 
     #1
     def test_get_without_params(self):
+        """get without parameters"""
         self.assertEqual(self.fch.get_by_param(), {})
 
     #2
     def test_get_by_id(self):
+        """get by id"""
         self.assertEqual(self.fch.get_by_param(id='2'), {})
 
     #3
     def test_get_by_name(self):
+        """get by name"""
         self.assertEqual(self.fch.get_by_param(name='test3'), {})
 
     #4
     def test_get_by_tag(self):
+        """get by tag"""
         self.assertEqual(self.fch.get_by_param(tag='test'), {})
 
     #4_1
-    def test_get_by_mimeType(self):
+    def test_get_by_mimetype(self):
+        """get by mimeType"""
         self.assertEqual(self.fch.get_by_param(mimetype='text/plain'), {})
 
     #4_2
-    def test_get_by_modificationTime(self):
+    def test_get_by_modificationtime(self):
+        """get by modificationTime"""
         self.assertEqual(self.fch.get_by_param(modificationtime='2022-04-29 09:33:45'), {})
 
     #5
     def test_get_full_params(self):
+        """get by all completed parameters"""
         self.assertEqual(self.fch.get_by_param(id='5',
                                                name='test5',
                                                tag='test',
@@ -60,6 +68,7 @@ class EmptyStorageTests(TestCase):
 
     #6
     def test_get_full_empty_params(self):
+        """get by all parameters with empty data"""
         self.assertEqual(self.fch.get_by_param(id='',
                                                name='',
                                                tag='',
@@ -67,17 +76,20 @@ class EmptyStorageTests(TestCase):
                                                modificationtime=''), {})
 
     #7
-    def test_get_several_similar_params(self):
+    def test_get_several_compound_params(self):
+        """get with several compound parameters"""
         self.assertEqual(self.fch.get_by_param(id=[7, 7_1],
                                                name=('test7', 'test7_1'),
                                                tag=('test', 'test1')), {})
 
     #8
     def test_get_wrong_param(self):
+        """get by only wrong parameter"""
         self.assertEqual(self.fch.get_by_param(param='test8'), {})
 
     #9
     def test_get_full_and_wrong_param(self):
+        """get by all completed parameters add wrong parameter"""
         self.assertEqual(self.fch.get_by_param(id='9',
                                                name='test9',
                                                tag='test',
@@ -87,57 +99,77 @@ class EmptyStorageTests(TestCase):
 
     #10
     def test_delete_without_params(self):
-        self.assertEqual(self.fch.delete_by_param(), (400, 'отсутствуют условия'))
+        """delete without parameters"""
+        self.assertEqual(self.fch.delete_by_param(),
+                         (400, 'отсутствуют условия'))
 
     #11
     def test_delete_by_id(self):
-        self.assertEqual(self.fch.delete_by_param(id='11'), '0 files deleted')
+        """delete by id"""
+        self.assertEqual(self.fch.delete_by_param(id='11'),
+                         '0 files deleted')
 
     #12
     def test_delete_by_name(self):
-        self.assertEqual(self.fch.delete_by_param(name='test12'), '0 files deleted')
+        """delete by name"""
+        self.assertEqual(self.fch.delete_by_param(name='test12'),
+                         '0 files deleted')
 
     #13
     def test_delete_by_tag(self):
-        self.assertEqual(self.fch.delete_by_param(tag='test'), '0 files deleted')
+        """delete by tag"""
+        self.assertEqual(self.fch.delete_by_param(tag='test'),
+                         '0 files deleted')
 
     #13_2
     def test_delete_by_mimetype(self):
-        self.assertEqual(self.fch.delete_by_param(mimetype='text/plain'), '0 files deleted')
+        """delete by mimetype"""
+        self.assertEqual(self.fch.delete_by_param(mimetype='text/plain'),
+                         '0 files deleted')
 
     #13_3
     def test_delete_by_modificationtime(self):
+        """delete by modification time"""
         self.assertEqual(self.fch.delete_by_param(modificationtime='2022-04-29 09:33:45'),
                          '0 files deleted')
 
     #14
     def test_delete_full_params(self):
+        """delete by all completed parameters"""
         self.assertEqual(self.fch.delete_by_param(id='14',
                                                   name='test14',
                                                   tag='test',
                                                   mimetype='text/plain',
-                                                  modificationtime='2022-04-29 09:33:45'), '0 files deleted')
+                                                  modificationtime='2022-04-29 09:33:45'),
+                         '0 files deleted')
 
     #15
     def test_delete_full_empty_params(self):
+        """delete by all parameters with empty data"""
         self.assertEqual(self.fch.delete_by_param(id='',
                                                   name='',
                                                   tag='',
                                                   mimetype='',
-                                                  modificationtime=''), (400, 'отсутствуют условия'))
+                                                  modificationtime=''),
+                         (400, 'отсутствуют условия'))
 
     #16
-    def test_delete_several_similar_params(self):
+    def test_delete_several_compound_params(self):
+        """delete by several compound parameters"""
         self.assertEqual(self.fch.delete_by_param(id=[7, 7_1],
                                                   name=('test7', 'test7_1'),
-                                                  tag=('test', 'test1')), '0 files deleted')
+                                                  tag=('test', 'test1')),
+                         '0 files deleted')
 
     #17
     def test_delete_only_wrong_param(self):
-        self.assertEqual(self.fch.delete_by_param(param='test17'), (400, 'отсутствуют условия'))
+        """delete by only one wrong parameter"""
+        self.assertEqual(self.fch.delete_by_param(param='test17'),
+                         (400, 'отсутствуют условия'))
 
     #18
     def test_delete_full_add_wrong_params(self):
+        """delete by all completed parameters add one wrong parameter"""
         self.assertEqual(self.fch.delete_by_param(id='18',
                                                   name='test18',
                                                   tag='test',
@@ -147,79 +179,115 @@ class EmptyStorageTests(TestCase):
 
     #19
     def test_download_without_params(self):
-        self.assertEqual(self.fch.download_without_param(), (400, 'отсутствуют условия'))
+        """download without parameters"""
+        self.assertEqual(self.fch.download_without_param(),
+                         (400, 'отсутствуют условия'))
 
     #20
     def test_download_by_id(self):
-        self.assertEqual(self.fch.download_by_param(id='20'), (404, 'файл не существует'))
+        """download by id"""
+        self.assertEqual(self.fch.download_by_param(id='20'),
+                         (404, 'файл не существует'))
 
     #21
     def test_download_by_several_id(self):
-        self.assertEqual(self.fch.download_by_param(id=['21', '21_2']), (404, 'файл не существует'))
+        """download by several id"""
+        self.assertEqual(self.fch.download_by_param(id=['21', '21_2']),
+                         (404, 'файл не существует'))
 
     #22
     def test_download_wrong_param(self):
-        self.assertEqual(self.fch.download_by_param(param='test22'), (400, 'отсутствуют условия'))
+        """download by one wrong parameter"""
+        self.assertEqual(self.fch.download_by_param(param='test22'),
+                         (400, 'отсутствуют условия'))
 
     #23
     def test_download_by_id_and_wrong_param(self):
-        self.assertEqual(self.fch.download_by_param(id='23', param='test23'), (404, 'файл не существует'))
+        """download by id and wrong parameter"""
+        self.assertEqual(self.fch.download_by_param(id='23',
+                                                    param='test23'),
+                         (404, 'файл не существует'))
 
     #24
     def test_upload_without_param(self):
-        self.assertCountEqual(self.fch.upload_by_param(data='test24'), REFERENCE_DICT)
+        """upload without parameters"""
+        self.assertCountEqual(self.fch.upload_by_param(data='test24'),
+                              REFERENCE_DICT)
 
     #25
     def test_upload_by_name(self):
-        self.assertEqual(self.fch.upload_by_param(name='test25', data='test25')['name'], 'test25')
+        """upload by name"""
+        self.assertEqual(self.fch.upload_by_param(name='test25',
+                                                  data='test25')['name'],
+                         'test25')
 
     #26
     def test_upload_by_id_name(self):
-        result = self.fch.upload_by_param(id='26', name='test26', data='test26')
+        """upload by id and name"""
+        result = self.fch.upload_by_param(id='26',
+                                          name='test26',
+                                          data='test26')
         self.assertEqual(result['id'], '26')
         self.assertEqual(result['name'], 'test26')
 
     #27
     def test_upload_by_id_name_tag(self):
-        result = self.fch.upload_by_param(id='27', name='test27', tag='test', data='test27')
+        """upload by id, name, tag"""
+        result = self.fch.upload_by_param(id='27',
+                                          name='test27',
+                                          tag='test',
+                                          data='test27')
         self.assertEqual(result['id'], '27')
         self.assertEqual(result['name'], 'test27')
         self.assertEqual(result['tag'], 'test')
 
     #28
     def test_upload_by_id(self):
-        result = self.fch.upload_by_param(id='28', data='test28')
+        """upload by id"""
+        result = self.fch.upload_by_param(id='28',
+                                          data='test28')
         self.assertEqual(result['id'], result['name'])
 
     #29
     def test_upload_without_param_data(self):
+        """upload without parameters and playload"""
         self.assertCountEqual(self.fch.upload_by_param(), REFERENCE_DICT)
 
     #30
     def test_upload_full_param_add_wrong_param(self):
+        """upload all completed parameters add one wrong parameter"""
         self.assertCountEqual(self.fch.upload_by_param(id='30',
                                                        name='test30',
                                                        tag='test',
                                                        param='test30_param',
-                                                       data='test30'), REFERENCE_DICT)
+                                                       data='test30'),
+                              REFERENCE_DICT)
 
     #30_2
     def test_upload_with_only_wrong_param(self):
-        self.assertCountEqual(self.fch.upload_by_param(param='test30_2'), REFERENCE_DICT)
+        """upload with only one wrong parameter"""
+        self.assertCountEqual(self.fch.upload_by_param(param='test30_2'),
+                              REFERENCE_DICT)
 
     #31
     def test_upload_several_id(self):
-        result = self.fch.upload_by_param(id=('31', '31_2'), data='test31')
+        """upload with several id"""
+        result = self.fch.upload_by_param(id=('31', '31_2'),
+                                          data='test31')
         self.assertEqual(result['id'], '31')
 
     #32
     def test_upload_several_name(self):
-        result = self.fch.upload_by_param(name=('test32', 'test32_2'), data='test32')
+        """upload with several name"""
+        result = self.fch.upload_by_param(name=('test32', 'test32_2'),
+                                          data='test32')
         self.assertEqual(result['name'], 'test32')
 
     #33
     def test_upload_several_tag(self):
-        result = self.fch.upload_by_param(tag=('test33', 'test33_2'), data='test33')
+        """upload with several tag"""
+        result = self.fch.upload_by_param(tag=('test33', 'test33_2'),
+                                          data='test33')
         self.assertEqual(result['tag'], 'test33')
 
 
@@ -246,19 +314,25 @@ class OneFileStorageTests(TestCase):
     #1
     def test_upload_change_name(self):
         """change name when loading an existing id with a new name"""
-        result = self.fch.upload_by_param(id='1', name='name2')
+        result = self.fch.upload_by_param(id='1',
+                                          name='name2')
         self.assertEqual(result['name'], 'name2')
 
     #2
     def test_upload_id_name_change_tag(self):
         """change tag when loading an existing id with a new tag"""
-        result = self.fch.upload_by_param(id='1', name='name2', tag='test2')
+        result = self.fch.upload_by_param(id='1',
+                                          name='name2',
+                                          tag='test2')
         self.assertEqual(result['tag'], 'test2')
 
     #3
     def test_upload_change_data(self):
         """change data when loading an existing id with a new data"""
-        self.fch.upload_by_param(id='1', name='name2', tag='test', data='2_name2')
+        self.fch.upload_by_param(id='1',
+                                 name='name2',
+                                 tag='test',
+                                 data='2_name2')
         self.assertEqual(self.fch.download_by_param(id=1), '2_name2')
 
     #4
@@ -272,7 +346,8 @@ class OneFileStorageTests(TestCase):
     #5
     def test_upload_id_change_tag(self):
         """change tag when loading an existing id with a new tag"""
-        result = self.fch.upload_by_param(id='1', tag='test5')
+        result = self.fch.upload_by_param(id='1',
+                                          tag='test5')
         self.assertEqual(result['tag'], 'test5')
 
     #6
@@ -343,28 +418,38 @@ class OneFileStorageTests(TestCase):
     #17
     def test_get_by_id_name(self):
         """get by id and name"""
-        result = self.fch.get_by_param(id='1', name='name1')
+        result = self.fch.get_by_param(id='1',
+                                       name='name1')
         self.assertCountEqual(result, REFERENCE_DICT)
         self.assertEqual(result['id'], '1')
 
     #18
     def test_get_by_name_tag(self):
         """get by name and tag"""
-        result = self.fch.get_by_param(name='name1', tag='test')
+        result = self.fch.get_by_param(name='name1',
+                                       tag='test')
         self.assertCountEqual(result, REFERENCE_DICT)
         self.assertEqual(result['id'], '1')
 
     #19
     def test_get_full_params(self):
         """get with full complete parameters """
-        result = self.fch.get_by_param(id='1', name='name1', tag='test', size='7', mimetype='text/plain')
+        result = self.fch.get_by_param(id='1',
+                                       name='name1',
+                                       tag='test',
+                                       size='7',
+                                       mimetype='text/plain')
         self.assertCountEqual(result, REFERENCE_DICT)
         self.assertEqual(result['id'], '1')
 
     #20
     def test_get_full_params_without_param_data(self):
         """get with full parameters without parameters data"""
-        result = self.fch.get_by_param(id='', name='', tag='', size='', mimetype='')
+        result = self.fch.get_by_param(id='',
+                                       name='',
+                                       tag='',
+                                       size='',
+                                       mimetype='')
         self.assertCountEqual(result, REFERENCE_DICT)
         self.assertEqual(result['id'], '1')
 
@@ -378,14 +463,16 @@ class OneFileStorageTests(TestCase):
     #22
     def test_get_with_several_compound_params(self):
         """get with several compound parameters"""
-        result = self.fch.get_by_param(id=('1', '2'), name=('name1', 'name2'))
+        result = self.fch.get_by_param(id=('1', '2'),
+                                       name=('name1', 'name2'))
         self.assertCountEqual(result, REFERENCE_DICT)
         self.assertEqual(result['id'], '1')
 
     #23
     def test_get_by_id_add_wrong_param(self):
         """get by id with wrong parameter"""
-        result = self.fch.get_by_param(id='1', param='test23')
+        result = self.fch.get_by_param(id='1',
+                                       param='test23')
         self.assertCountEqual(result, REFERENCE_DICT)
         self.assertEqual(result['id'], '1')
 
@@ -428,17 +515,22 @@ class OneFileStorageTests(TestCase):
     #29
     def test_delete_by_all_params(self):
         """delete by all correctly completed parameters """
-        self.assertEqual(self.fch.delete_by_param(id='1', name='name1', tag='test'), '1 files deleted')
+        self.assertEqual(self.fch.delete_by_param(id='1',
+                                                  name='name1',
+                                                  tag='test'), '1 files deleted')
 
     #30
     def test_delete_one_incorrect_param(self):
         """delete by all parameters where one incorrect data"""
-        self.assertEqual(self.fch.delete_by_param(id='1', name='name1', tag='tes'), '0 files deleted')
+        self.assertEqual(self.fch.delete_by_param(id='1',
+                                                  name='name1',
+                                                  tag='tes'), '0 files deleted')
 
     #31
     def test_delete_by_id_add_wrong_param(self):
         """delete by id with one wrong parameter"""
-        self.assertEqual(self.fch.delete_by_param(id='1', param='test31'), '1 files deleted')
+        self.assertEqual(self.fch.delete_by_param(id='1',
+                                                  param='test31'), '1 files deleted')
 
     #32
     def test_download_by_id(self):
@@ -459,12 +551,14 @@ class OneFileStorageTests(TestCase):
     #35
     def test_download_by_id_add_wrong_param(self):
         """download by id and wrong parameter"""
-        self.assertEqual(self.fch.download_by_param(id='1', param='test35'), '1_name1')
+        self.assertEqual(self.fch.download_by_param(id='1',
+                                                    param='test35'), '1_name1')
 
     #36
     def test_download_by_several_id(self):
         """download by several id"""
-        self.assertEqual(self.fch.download_by_param(id=('1', '2'), param='test35'), '1_name1')
+        self.assertEqual(self.fch.download_by_param(id=('1', '2'),
+                                                    param='test35'), '1_name1')
 
     #37
     def test_download_by_id_check_content_type(self):
