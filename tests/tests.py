@@ -587,8 +587,68 @@ class ManyFilesStorageTests(TestCase):
         """setup for class"""
         cls.fch = ConnectorHttp('http://127.0.0.1:9876')
 
+    def setUp(self) -> None:
+        """setup for tests"""
+        self.fch.upload_by_param(id='1', name='part_3_test', tag='test1', data='test')
+        self.fch.upload_by_param(id='2', name='part_3_test_1', tag='test2', data='test')
+        self.fch.upload_by_param(id='3', name='part_3_test_2', tag='test1', data='test')
+        self.fch.upload_by_param(id='4', name='part_3_test', tag='test2', data='test')
+
     def tearDown(self) -> None:
         """teardown for tests"""
         result = self.fch.get_by_param()
         for ids in result:
             self.fch.delete_by_param(id=ids['id'])
+
+    #1
+    def test_upload_by_params(self):
+        """upload new file by all parameters"""
+        result = self.fch.upload_by_param(id='5', name='part_3_test_5', tag='test5', data='test5')
+        self.assertCountEqual(result, REFERENCE_DICT)
+
+    #2
+    def test_upload_several_files_by_same_params(self):
+        """upload several files with the same parameters"""
+        result = self.fch.upload_by_param(id='5', name='part_3_test_5', tag='test5', data='test5')
+        self.assertCountEqual(result, REFERENCE_DICT)
+        result = self.fch.upload_by_param(id='5', name='part_3_test_5', tag='test5', data='test5')
+        self.assertCountEqual(result, REFERENCE_DICT)
+        result = self.fch.upload_by_param(id='5', name='part_3_test_5', tag='test5', data='test5')
+        self.assertCountEqual(result, REFERENCE_DICT)
+
+
+    #3
+    def test_upload_only_playload(self):
+        """upload file without parameters only playload"""
+        result = self.fch.upload_by_param(data='test3')
+        self.assertCountEqual(result, REFERENCE_DICT)
+        self.assertEqual(result['id'], result['name'])
+
+    #4
+    def test_get_without_params(self):
+        """get without parameters"""
+        self.assertEqual(len(self.fch.get_by_param()), 4)
+
+    #5
+    def test_get_full_params(self):
+        """get by full correctly completed parameters"""
+        result = self.fch.get_by_param(id='2', name='part_3_test_1', tag='test2')
+        self.assertCountEqual(result, REFERENCE_DICT)
+        self.assertEqual(result['id'], '2')
+
+    #6
+    def test_get_by_name_tag(self):
+        """get by name and tag"""
+        result = self.fch.get_by_param(name='part_3_test_1', tag='test2')
+        self.assertCountEqual(result, REFERENCE_DICT)
+        self.assertEqual(result['id'], '2')
+
+    #7
+    def test_get_few_file_by_name_tag(self):
+        """get few files by name and tag"""
+        self.fch.upload_by_param(name='part_3_test_7', tag='test', data='test7')
+        self.fch.upload_by_param(name='part_3_test_7', tag='test', data='test7')
+        self.fch.upload_by_param(name='part_3_test_7', tag='test', data='test7')
+        self.assertEqual(len(self.fch.get_by_param(name='part_3_test_7', tag='test')), 3)
+
+
