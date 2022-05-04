@@ -1,6 +1,6 @@
 """tests for api """
 from unittest.case import TestCase
-from http_connector import ConnectorHttp
+from tests.http_connector import ConnectorHttp
 
 REFERENCE_DICT = {'id': '',
                   'name': '',
