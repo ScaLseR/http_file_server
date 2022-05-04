@@ -4,7 +4,6 @@ from dataclasses import dataclass, asdict
 from requests import request
 
 
-
 @dataclass
 class ParamsReq:
     """structure for requests parameters """
@@ -16,17 +15,17 @@ class ParamsReq:
     modificationtime: any = ''
     param: any = ''
 
+    def to_dict(self):
+        """convert to dict structure ParamsReq"""
+        return asdict(self)
+
+
 _GET_END_POINT = '/api/get'
 _UPLOAD_END_POINT = '/api/upload'
 _DELETE_END_POINT = '/api/delete'
 _DOWNLOAD_END_POINT = '/api/download'
 ENDPOINTS = {_GET_END_POINT: 'get', _UPLOAD_END_POINT: 'post',
              _DELETE_END_POINT: 'delete', _DOWNLOAD_END_POINT: 'get'}
-
-
-def to_dict(params: ParamsReq):
-    """convert to dict structure ParamsReq"""
-    return asdict(params)
 
 
 def request_preparation(base_url, endpoint):
@@ -53,7 +52,7 @@ class ConnectorHttp:
 
     def download_by_param(self, params: ParamsReq):
         """download file by id"""
-        response = self._download(to_dict(params))
+        response = self._download(params.to_dict())
         if response.status_code == 200:
             return response.content.decode('utf-8')
         return response.status_code, response.content.decode('utf-8')
@@ -65,7 +64,7 @@ class ConnectorHttp:
 
     def download_check_param(self, params: ParamsReq):
         """download check wile output parameters"""
-        return self._download(to_dict(params)).headers
+        return self._download(params.to_dict()).headers
 
     def get_without_param(self):
         """get without parameters"""
@@ -73,17 +72,17 @@ class ConnectorHttp:
 
     def get_by_param(self, params: ParamsReq):
         """get file by parameters"""
-        response = self._get(to_dict(params))
+        response = self._get(params.to_dict())
         return loads(response.content.decode('utf-8'))
 
     def delete_by_param(self, params: ParamsReq):
         """delete file by parameters"""
-        response = self._delete(to_dict(params))
+        response = self._delete(params.to_dict())
         if response.status_code == 200:
             return response.content.decode('utf-8')
         return response.status_code, response.content.decode('utf-8')
 
     def upload_by_param(self, params: ParamsReq, data=''):
         """upload by parameters"""
-        response = self._upload(to_dict(params), data=data)
+        response = self._upload(params.to_dict(), data=data)
         return loads(response.content.decode('utf-8'))
