@@ -1,8 +1,20 @@
-from requests import request
+"""connector for http server"""
 from json import loads
-from collections import namedtuple
-from typing import get_type_hints
+from dataclasses import dataclass, asdict
+from requests import request
 
+
+
+@dataclass
+class ParamsReq:
+    """structure for requests parameters """
+    id: any = ''
+    tag: any = ''
+    name: any = ''
+    size: any = ''
+    mimetype: any = ''
+    modificationtime: any = ''
+    param: any = ''
 
 _GET_END_POINT = '/api/get'
 _UPLOAD_END_POINT = '/api/upload'
@@ -12,24 +24,9 @@ ENDPOINTS = {_GET_END_POINT: 'get', _UPLOAD_END_POINT: 'post',
              _DELETE_END_POINT: 'delete', _DOWNLOAD_END_POINT: 'get'}
 
 
-# class ParToDict(namedtuple):
-#     """namedtuple class for convert parameters to dict"""
-#     id: str
-#     tag: str
-#     name: str
-#     size: int
-#     location: str
-#     mimeType: str
-#     modificationTime: str
-#
-#     def par_to_json(self):
-#         """convert params to dict"""
-#         hints = get_type_hints(self)
-#         return {
-#             key: hints[key](value)
-#             for key, value in self.asdict().items()
-#             if not key.startswith('')
-#         }
+def to_dict(params: ParamsReq):
+    """convert to dict structure ParamsReq"""
+    return asdict(params)
 
 
 def request_preparation(base_url, endpoint):
@@ -41,7 +38,6 @@ def request_preparation(base_url, endpoint):
         response = request(method=method, url=url,
                            headers=headers, params=params, data=data)
         # #response.raise_for_status()
-        #return response.content.decode('utf-8')
         return response
     return make_request
 
@@ -55,38 +51,39 @@ class ConnectorHttp:
         self._delete = request_preparation(http_url, _DELETE_END_POINT)
         self._download = request_preparation(http_url, _DOWNLOAD_END_POINT)
 
-    def download_by_param(self, id='', param=''):
+    def download_by_param(self, params: ParamsReq):
         """download file by id"""
-        response = self._download({'id': id, 'param': param})
+        response = self._download(to_dict(params))
         if response.status_code == 200:
             return response.content.decode('utf-8')
-        else:
-            return response.status_code, response.content.decode('utf-8')
+        return response.status_code, response.content.decode('utf-8')
 
     def download_without_param(self):
         """download file without parameters"""
         response = self._download()
         return response.status_code, response.content.decode('utf-8')
 
-    def download_check_param(self, id=''):
+    def download_check_param(self, params: ParamsReq):
         """download check wile output parameters"""
-        return self._download({'id': id}).headers
+        return self._download(to_dict(params)).headers
 
-    def get_by_param(self, id='', name='', tag='', size='', mimetype='', modificationtime='', param=''):
+    def get_without_param(self):
+        """get without parameters"""
+        return loads(self._get().content.decode('utf-8'))
+
+    def get_by_param(self, params: ParamsReq):
         """get file by parameters"""
-        response = self._get({'id': id, 'name': name, 'tag': tag, 'size': size,
-                              'mimetype': mimetype, 'modificationtime': modificationtime, 'param': param})
+        response = self._get(to_dict(params))
         return loads(response.content.decode('utf-8'))
 
-    def delete_by_param(self, id='', name='', tag='', size='', mimetype='', modificationtime='', param=''):
+    def delete_by_param(self, params: ParamsReq):
         """delete file by parameters"""
-        response = self._delete({'id': id, 'name': name, 'tag': tag, 'size': size,
-                             'mimetype': mimetype, 'modificationtime': modificationtime, 'param': param})
+        response = self._delete(to_dict(params))
         if response.status_code == 200:
             return response.content.decode('utf-8')
-        else:
-            return response.status_code, response.content.decode('utf-8')
+        return response.status_code, response.content.decode('utf-8')
 
-    def upload_by_param(self, id='', name='', tag='', param='', data=''):
-        response = self._upload({'id': id, 'name': name, 'tag': tag, 'param': param}, data=data)
+    def upload_by_param(self, params: ParamsReq, data=''):
+        """upload by parameters"""
+        response = self._upload(to_dict(params), data=data)
         return loads(response.content.decode('utf-8'))
