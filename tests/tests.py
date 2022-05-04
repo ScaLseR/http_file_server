@@ -644,11 +644,58 @@ class ManyFilesStorageTests(TestCase):
         self.assertEqual(result['id'], '2')
 
     #7
-    def test_get_few_file_by_name_tag(self):
+    def test_get_files_by_name_tag(self):
         """get few files by name and tag"""
         self.fch.upload_by_param(name='part_3_test_7', tag='test', data='test7')
         self.fch.upload_by_param(name='part_3_test_7', tag='test', data='test7')
         self.fch.upload_by_param(name='part_3_test_7', tag='test', data='test7')
         self.assertEqual(len(self.fch.get_by_param(name='part_3_test_7', tag='test')), 3)
 
+    #8
+    def test_get_few_files_by_name_tag(self):
+        """get few files by name and tag"""
+        self.fch.upload_by_param(id='5', name='part_3_test', tag='test1', data='test')
+        self.assertEqual(len(self.fch.get_by_param(name='part_3_test', tag='test1')), 2)
 
+    #9
+    def test_get_several_id_name(self):
+        """get by several compound parameters id, name and one tag"""
+        result = self.fch.get_by_param(id=('1', '2', '3', '4'), name=('part_3_test', 'part_3_test_1'), tag='test1')
+        self.assertCountEqual(result, REFERENCE_DICT)
+        self.assertEqual(result['id'], '1')
+
+    #10
+    def test_get_several_id_name_tag(self):
+        """get by several compound parameters id, name and tag"""
+        self.assertEqual(len(self.fch.get_by_param(id=('1', '2', '3', '4'),
+                                                   name=('part_3_test', 'part_3_test_1'),
+                                                   tag=('test1', 'test2'))), 3)
+
+    #11
+    def test_delete_name_tag(self):
+        """delete by name and tag parameters"""
+        self.fch.upload_by_param(name='part_3_test_11', tag='test', data='test11')
+        self.fch.upload_by_param(name='part_3_test_11', tag='test', data='test11')
+        self.fch.upload_by_param(name='part_3_test_11', tag='test', data='test11')
+        self.assertEqual(self.fch.delete_by_param(name='part_3_test_11',
+                                                  tag='test'), '3 files deleted')
+
+    #12
+    def test_delete_name_several_tag(self):
+        """delete by name and several tag"""
+        self.assertEqual(self.fch.delete_by_param(name='part_3_test',
+                                                  tag=('test1', 'test2')), '2 files deleted')
+
+    #13
+    def test_delete_several_name_id(self):
+        """delete by several id, name and one tag"""
+        self.assertEqual(self.fch.delete_by_param(id=('1', '2', '3', '4'),
+                                                  name=('part_3_test', 'part_3_test_1'),
+                                                  tag='test1'), '1 files deleted')
+
+    #14
+    def test_delete_several_id_name_tag(self):
+        """delete by several id, name and tag"""
+        self.assertEqual(self.fch.delete_by_param(id=('1', '2', '3', '4'),
+                                                  name=('part_3_test', 'part_3_test_1'),
+                                                  tag=('test1', 'test')), '1 files deleted')
