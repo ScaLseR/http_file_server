@@ -18,6 +18,12 @@ def fch():
     return fch
 
 
+@pytest.fixture()
+def upl_one(fch):
+    fch.upload_by_param(ParamsReq(id='1', name='name1', tag='test'), data='1_name1')
+    return fch
+
+
 @pytest.fixture(autouse=True)
 def clear(fch):
     result = fch.get_without_param()
@@ -284,309 +290,289 @@ class TestEmptyStorage:
         assert result['tag'] == 'test33'
 
 
-# class Test_OneFileStorage():# pylint: disable=too-many-public-methods
-#     """one file storage tests"""
-#
-#     @classmethod
-#     def setUpClass(cls) -> None:
-#         """setup for class"""
-#         cls.fch = ConnectorHttp('http://127.0.0.1:9876')
-#
-#     def setUp(self) -> None:
-#         self.fch.upload_by_param(ParamsReq(id='1',
-#                                            name='name1',
-#                                            tag='test'), data='1_name1')
-#
-#     def tearDown(self) -> None:
-#         """teardown for tests"""
-#         result = self.fch.get_without_param()
-#         if isinstance(result, dict) and len(result) > 0:
-#             self.fch.delete_by_param(ParamsReq(id=result['id']))
-#         else:
-#             for part in result:
-#                 self.fch.delete_by_param(ParamsReq(id=part['id']))
-#
-#     #1
-#     def test_upload_change_name(self):
-#         """change name when loading an existing id with a new name"""
-#         result = self.fch.upload_by_param(ParamsReq(id='1', name='name2'))
-#         self.assertEqual(result['name'], 'name2')
-#
-#     #2
-#     def test_upload_id_name_change_tag(self):
-#         """change tag when loading an existing id with a new tag"""
-#         result = self.fch.upload_by_param(ParamsReq(id='1',
-#                                                     name='name2',
-#                                                     tag='test2'))
-#         self.assertEqual(result['tag'], 'test2')
-#
-#     #3
-#     def test_upload_change_data(self):
-#         """change data when loading an existing id with a new data"""
-#         self.fch.upload_by_param(ParamsReq(id='1',
-#                                            name='name2',
-#                                            tag='test'), data='2_name2')
-#         self.assertEqual(self.fch.download_by_param(ParamsReq(id='1')), '2_name2')
-#
-#     #4
-#     def test_upload_full_param_and_wrong_param(self):
-#         """upload with wrong parameter"""
-#         self.assertCountEqual(self.fch.upload_by_param(ParamsReq(id='1',
-#                                                                  name='name2',
-#                                                                  tag='test4',
-#                                                                  param='test4')), REFERENCE_DICT)
-#
-#     #5
-#     def test_upload_id_change_tag(self):
-#         """change tag when loading an existing id with a new tag"""
-#         result = self.fch.upload_by_param(ParamsReq(id='1',
-#                                                     tag='test5'))
-#         self.assertEqual(result['tag'], 'test5')
-#
-#     #6
-#     def test_get_without_param(self):
-#         """get without parameters"""
-#         self.assertCountEqual(self.fch.get_by_param(ParamsReq()), REFERENCE_DICT)
-#
-#     #7
-#     def test_get_wrong_param(self):
-#         """get with only wrong parameter"""
-#         self.assertCountEqual(self.fch.get_by_param(ParamsReq(param='test7')), REFERENCE_DICT)
-#
-#     #8
-#     def test_get_by_id(self):
-#         """get by id"""
-#         result = self.fch.get_by_param(ParamsReq(id='1'))
-#         self.assertCountEqual(result, REFERENCE_DICT)
-#         self.assertEqual(result['id'], '1')
-#
-#     #9
-#     def test_get_by_wrong_id(self):
-#         """get by wrong id"""
-#         self.assertEqual(self.fch.get_by_param(ParamsReq(id='2')), {})
-#
-#     #10
-#     def test_get_by_name(self):
-#         """get by name"""
-#         result = self.fch.get_by_param(ParamsReq(name='name1'))
-#         self.assertCountEqual(result, REFERENCE_DICT)
-#         self.assertEqual(result['id'], '1')
-#
-#     #11
-#     def test_get_by_wrong_name(self):
-#         """get by wrong name"""
-#         self.assertEqual(self.fch.get_by_param(ParamsReq(name='name')), {})
-#
-#     #12
-#     def test_get_by_tag(self):
-#         """get by tag"""
-#         result = self.fch.get_by_param(ParamsReq(tag='test'))
-#         self.assertCountEqual(result, REFERENCE_DICT)
-#         self.assertEqual(result['id'], '1')
-#
-#     #13
-#     def test_get_by_wrong_tag(self):
-#         """get by wrong tag"""
-#         self.assertEqual(self.fch.get_by_param(ParamsReq(tag='tes')), {})
-#
-#     #14
-#     def test_get_by_size(self):
-#         """get by size"""
-#         result = self.fch.get_by_param(ParamsReq(size=7))
-#         self.assertCountEqual(result, REFERENCE_DICT)
-#         self.assertEqual(result['id'], '1')
-#
-#     #15
-#     def test_get_by_mimetype(self):
-#         """get by mimetype"""
-#         result = self.fch.get_by_param(ParamsReq(mimetype='text/plain'))
-#         self.assertCountEqual(result, REFERENCE_DICT)
-#         self.assertEqual(result['id'], '1')
-#
-#     #16
-#     def test_get_by_wrong_mimetype(self):
-#         """get by wrong mimetype"""
-#         self.assertEqual(self.fch.get_by_param(ParamsReq(mimetype='text')), {})
-#
-#     #17
-#     def test_get_by_id_name(self):
-#         """get by id and name"""
-#         result = self.fch.get_by_param(ParamsReq(id='1',
-#                                                  name='name1'))
-#         self.assertCountEqual(result, REFERENCE_DICT)
-#         self.assertEqual(result['id'], '1')
-#
-#     #18
-#     def test_get_by_name_tag(self):
-#         """get by name and tag"""
-#         result = self.fch.get_by_param(ParamsReq(name='name1',
-#                                                  tag='test'))
-#         self.assertCountEqual(result, REFERENCE_DICT)
-#         self.assertEqual(result['id'], '1')
-#
-#     #19
-#     def test_get_full_params(self):
-#         """get with full complete parameters """
-#         result = self.fch.get_by_param(ParamsReq(id='1',
-#                                                  name='name1',
-#                                                  tag='test',
-#                                                  size='7',
-#                                                  mimetype='text/plain'))
-#         self.assertCountEqual(result, REFERENCE_DICT)
-#         self.assertEqual(result['id'], '1')
-#
-#     #20
-#     def test_get_full_params_without_param_data(self):
-#         """get with full parameters without parameters data"""
-#         result = self.fch.get_by_param(ParamsReq(id='',
-#                                        name='',
-#                                        tag='',
-#                                        size='',
-#                                        mimetype=''))
-#         self.assertCountEqual(result, REFERENCE_DICT)
-#         self.assertEqual(result['id'], '1')
-#
-#     #21
-#     def test_get_with_one_compound_params(self):
-#         """get with one compound parameters"""
-#         result = self.fch.get_by_param(ParamsReq(id=('1', '2')))
-#         self.assertCountEqual(result, REFERENCE_DICT)
-#         self.assertEqual(result['id'], '1')
-#
-#     #22
-#     def test_get_with_several_compound_params(self):
-#         """get with several compound parameters"""
-#         result = self.fch.get_by_param(ParamsReq(id=('1', '2'),
-#                                        name=('name1', 'name2')))
-#         self.assertCountEqual(result, REFERENCE_DICT)
-#         self.assertEqual(result['id'], '1')
-#
-#     #23
-#     def test_get_by_id_add_wrong_param(self):
-#         """get by id with wrong parameter"""
-#         result = self.fch.get_by_param(ParamsReq(id='1',
-#                                        param='test23'))
-#         self.assertCountEqual(result, REFERENCE_DICT)
-#         self.assertEqual(result['id'], '1')
-#
-#     #24
-#     def test_delete_by_id(self):
-#         """delete by id"""
-#         self.assertEqual(self.fch.delete_by_param(ParamsReq(id='1')),
-#                          '1 files deleted')
-#
-#     #25
-#     def test_delete_several_by_one_id(self):
-#         """several delete by one id"""
-#         self.assertEqual(self.fch.delete_by_param(ParamsReq(id='1')),
-#                          '1 files deleted')
-#         self.assertEqual(self.fch.delete_by_param(ParamsReq(id='1')),
-#                          '0 files deleted')
-#
-#     #26
-#     def test_delete_by_wrong_id(self):
-#         """delete by wrong id"""
-#         self.assertEqual(self.fch.delete_by_param(ParamsReq(id='2')),
-#                          '0 files deleted')
-#
-#     #25
-#     def test_delete_by_name(self):
-#         """delete by name"""
-#         self.assertEqual(self.fch.delete_by_param(ParamsReq(name='name1')),
-#                          '1 files deleted')
-#
-#     #26
-#     def test_delete_by_wrong_name(self):
-#         """delete by wrong name"""
-#         self.assertEqual(self.fch.delete_by_param(ParamsReq(name='name')),
-#                          '0 files deleted')
-#
-#     #27
-#     def test_delete_by_tag(self):
-#         """delete by tag"""
-#         self.assertEqual(self.fch.delete_by_param(ParamsReq(tag='test')),
-#                          '1 files deleted')
-#
-#     #28
-#     def test_delete_by_wrong_tag(self):
-#         """delete by wrong tag"""
-#         self.assertEqual(self.fch.delete_by_param(ParamsReq(tag='tes')),
-#                          '0 files deleted')
-#
-#     #29
-#     def test_delete_by_all_params(self):
-#         """delete by all correctly completed parameters """
-#         self.assertEqual(self.fch.delete_by_param(ParamsReq(id='1',
-#                                                             name='name1',
-#                                                             tag='test')),
-#                          '1 files deleted')
-#
-#     #30
-#     def test_delete_one_incorrect_param(self):
-#         """delete by all parameters where one incorrect data"""
-#         self.assertEqual(self.fch.delete_by_param(ParamsReq(id='1',
-#                                                             name='name1',
-#                                                             tag='tes')),
-#                          '0 files deleted')
-#
-#     #31
-#     def test_delete_by_id_add_wrong_param(self):
-#         """delete by id with one wrong parameter"""
-#         self.assertEqual(self.fch.delete_by_param(ParamsReq(id='1',
-#                                                             param='test31')),
-#                          '1 files deleted')
-#
-#     #32
-#     def test_download_by_id(self):
-#         """download by id"""
-#         self.assertEqual(self.fch.download_by_param(ParamsReq(id='1')),
-#                          '1_name1')
-#
-#     #33
-#     def test_download_several_by_one_id(self):
-#         """several downloads by one id"""
-#         self.assertEqual(self.fch.download_by_param(ParamsReq(id='1')),
-#                          '1_name1')
-#         self.assertEqual(self.fch.download_by_param(ParamsReq(id='1')),
-#                          '1_name1')
-#
-#     #34
-#     def test_download_by_wrong_id(self):
-#         """download by wrong id"""
-#         self.assertEqual(self.fch.download_by_param(ParamsReq(id='2')),
-#                          (404, 'файл не существует'))
-#
-#     #35
-#     def test_download_by_id_add_wrong_param(self):
-#         """download by id and wrong parameter"""
-#         self.assertEqual(self.fch.download_by_param(ParamsReq(id='1',
-#                                                               param='test35')),
-#                          '1_name1')
-#
-#     #36
-#     def test_download_by_several_id(self):
-#         """download by several id"""
-#         self.assertEqual(self.fch.download_by_param(ParamsReq(id=('1', '2'),
-#                                                               param='test35')),
-#                          '1_name1')
-#
-#     #37
-#     def test_download_by_id_check_content_type(self):
-#         """download by id and check content-type"""
-#         result = self.fch.download_check_param(ParamsReq(id='1'))
-#         self.assertMultiLineEqual(result['Content-type'], 'text/plain')
-#
-#     #38
-#     def test_download_by_id_check_filename(self):
-#         """download by id and check filename"""
-#         result = self.fch.download_check_param(ParamsReq(id='1'))
-#         self.assertMultiLineEqual(result['Content-Disposition'][-5:], 'name1')
-#
-#     #39
-#     def test_download_by_id_check_size(self):
-#         """download by id and check size"""
-#         result = self.fch.download_check_param(ParamsReq(id='1'))
-#         self.assertMultiLineEqual(result['Content-length'], '7')
+class TestOneFileStorage:
+    """one file storage tests"""
+
+    #1
+    def test_upload_change_name(self, upl_one):
+        """change name when loading an existing id with a new name"""
+        result = upl_one.upload_by_param(ParamsReq(id='1',
+                                                   name='name2'))
+        assert result['name'] == 'name2'
+
+    #2
+    def test_upload_id_name_change_tag(self, upl_one):
+        """change tag when loading an existing id with a new tag"""
+        result = upl_one.upload_by_param(ParamsReq(id='1',
+                                                   name='name2',
+                                                   tag='test2'))
+        assert result['tag'] == 'test2'
+
+    #3
+    def test_upload_change_data(self, upl_one):
+        """change data when loading an existing id with a new data"""
+        upl_one.upload_by_param(ParamsReq(id='1',
+                                          name='name2',
+                                          tag='test'), data='2_name2')
+        assert upl_one.download_by_param(ParamsReq(id='1')) == '2_name2'
+
+    #4
+    def test_upload_full_param_and_wrong_param(self, upl_one):
+        """upload with wrong parameter"""
+        case = unittest.TestCase()
+        case.assertCountEqual(upl_one.upload_by_param(ParamsReq(id='1',
+                                                                name='name2',
+                                                                tag='test4',
+                                                                param='test4')), REFERENCE_DICT)
+
+    #5
+    def test_upload_id_change_tag(self, upl_one):
+        """change tag when loading an existing id with a new tag"""
+        result = upl_one.upload_by_param(ParamsReq(id='1',
+                                                   tag='test5'))
+        assert result['tag'] == 'test5'
+
+    #6
+    def test_get_without_param(self, upl_one):
+        """get without parameters"""
+        case = unittest.TestCase()
+        case.assertCountEqual(upl_one.get_by_param(ParamsReq()), REFERENCE_DICT)
+
+    #7
+    def test_get_wrong_param(self, upl_one):
+        """get with only wrong parameter"""
+        case = unittest.TestCase()
+        case.assertCountEqual(upl_one.get_by_param(ParamsReq(param='test7')), REFERENCE_DICT)
+
+    #8
+    def test_get_by_id(self, upl_one):
+        """get by id"""
+        case = unittest.TestCase()
+        result = upl_one.get_by_param(ParamsReq(id='1'))
+        case.assertCountEqual(result, REFERENCE_DICT)
+        assert result['id'] == '1'
+
+    #9
+    def test_get_by_wrong_id(self, upl_one):
+        """get by wrong id"""
+        assert upl_one.get_by_param(ParamsReq(id='2')) == {}
+
+    #10
+    def test_get_by_name(self, upl_one):
+        """get by name"""
+        case = unittest.TestCase()
+        result = upl_one.get_by_param(ParamsReq(name='name1'))
+        case.assertCountEqual(result, REFERENCE_DICT)
+        assert result['id'] == '1'
+
+    #11
+    def test_get_by_wrong_name(self, upl_one):
+        """get by wrong name"""
+        assert upl_one.get_by_param(ParamsReq(name='name')) == {}
+
+    #12
+    def test_get_by_tag(self, upl_one):
+        """get by tag"""
+        case = unittest.TestCase()
+        result = upl_one.get_by_param(ParamsReq(tag='test'))
+        case.assertCountEqual(result, REFERENCE_DICT)
+        assert result['id'] == '1'
+
+    #13
+    def test_get_by_wrong_tag(self, upl_one):
+        """get by wrong tag"""
+        assert upl_one.get_by_param(ParamsReq(tag='tes')) == {}
+
+    #14
+    def test_get_by_size(self, upl_one):
+        """get by size"""
+        case = unittest.TestCase()
+        result = upl_one.get_by_param(ParamsReq(size=7))
+        case.assertCountEqual(result, REFERENCE_DICT)
+        assert result['id'] == '1'
+
+    #15
+    def test_get_by_mimetype(self, upl_one):
+        """get by mimetype"""
+        case = unittest.TestCase()
+        result = upl_one.get_by_param(ParamsReq(mimetype='text/plain'))
+        case.assertCountEqual(result, REFERENCE_DICT)
+        assert result['id'] == '1'
+
+    #16
+    def test_get_by_wrong_mimetype(self, upl_one):
+        """get by wrong mimetype"""
+        assert upl_one.get_by_param(ParamsReq(mimetype='text')) == {}
+
+    #17
+    def test_get_by_id_name(self, upl_one):
+        """get by id and name"""
+        case = unittest.TestCase()
+        result = upl_one.get_by_param(ParamsReq(id='1',
+                                                name='name1'))
+        case.assertCountEqual(result, REFERENCE_DICT)
+        assert result['id'] == '1'
+
+    #18
+    def test_get_by_name_tag(self, upl_one):
+        """get by name and tag"""
+        case = unittest.TestCase()
+        result = upl_one.get_by_param(ParamsReq(name='name1',
+                                                tag='test'))
+        case.assertCountEqual(result, REFERENCE_DICT)
+        assert result['id'] == '1'
+
+    #19
+    def test_get_full_params(self, upl_one):
+        """get with full complete parameters """
+        case = unittest.TestCase()
+        result = upl_one.get_by_param(ParamsReq(id='1',
+                                                name='name1',
+                                                tag='test',
+                                                size='7',
+                                                mimetype='text/plain'))
+        case.assertCountEqual(result, REFERENCE_DICT)
+        assert result['id'] == '1'
+
+    #20
+    def test_get_full_params_without_param_data(self, upl_one):
+        """get with full parameters without parameters data"""
+        case = unittest.TestCase()
+        result = upl_one.get_by_param(ParamsReq(id='',
+                                                name='',
+                                                tag='',
+                                                size='',
+                                                mimetype=''))
+        case.assertCountEqual(result, REFERENCE_DICT)
+        assert result['id'] == '1'
+
+    #21
+    def test_get_with_one_compound_params(self, upl_one):
+        """get with one compound parameters"""
+        case = unittest.TestCase()
+        result = upl_one.get_by_param(ParamsReq(id=('1', '2')))
+        case.assertCountEqual(result, REFERENCE_DICT)
+        assert result['id'] == '1'
+
+    #22
+    def test_get_with_several_compound_params(self, upl_one):
+        """get with several compound parameters"""
+        case = unittest.TestCase()
+        result = upl_one.get_by_param(ParamsReq(id=('1', '2'),
+                                                name=('name1', 'name2')))
+        case.assertCountEqual(result, REFERENCE_DICT)
+        assert result['id'] == '1'
+
+    #23
+    def test_get_by_id_add_wrong_param(self, upl_one):
+        """get by id with wrong parameter"""
+        case = unittest.TestCase()
+        result = upl_one.get_by_param(ParamsReq(id='1',
+                                                param='test23'))
+        case.assertCountEqual(result, REFERENCE_DICT)
+        assert result['id'] == '1'
+
+    #24
+    def test_delete_by_id(self, upl_one):
+        """delete by id"""
+        assert upl_one.delete_by_param(ParamsReq(id='1')) == '1 files deleted'
+
+    #25
+    def test_delete_several_by_one_id(self, upl_one):
+        """several delete by one id"""
+        assert upl_one.delete_by_param(ParamsReq(id='1')) == '1 files deleted'
+        assert upl_one.delete_by_param(ParamsReq(id='1')) == '0 files deleted'
+
+    #26
+    def test_delete_by_wrong_id(self, upl_one):
+        """delete by wrong id"""
+        assert upl_one.delete_by_param(ParamsReq(id='2')) == '0 files deleted'
+
+    #25
+    def test_delete_by_name(self, upl_one):
+        """delete by name"""
+        assert upl_one.delete_by_param(ParamsReq(name='name1')) == '1 files deleted'
+
+    #26
+    def test_delete_by_wrong_name(self, upl_one):
+        """delete by wrong name"""
+        assert upl_one.delete_by_param(ParamsReq(name='name')) == '0 files deleted'
+
+    #27
+    def test_delete_by_tag(self, upl_one):
+        """delete by tag"""
+        assert upl_one.delete_by_param(ParamsReq(tag='test')) == '1 files deleted'
+
+    #28
+    def test_delete_by_wrong_tag(self, upl_one):
+        """delete by wrong tag"""
+        assert upl_one.delete_by_param(ParamsReq(tag='tes')) == '0 files deleted'
+
+    #29
+    def test_delete_by_all_params(self, upl_one):
+        """delete by all correctly completed parameters """
+        assert upl_one.delete_by_param(ParamsReq(id='1',
+                                                 name='name1',
+                                                 tag='test')) == '1 files deleted'
+
+    #30
+    def test_delete_one_incorrect_param(self, upl_one):
+        """delete by all parameters where one incorrect data"""
+        assert upl_one.delete_by_param(ParamsReq(id='1',
+                                                 name='name1',
+                                                 tag='tes')) == '0 files deleted'
+
+    #31
+    def test_delete_by_id_add_wrong_param(self, upl_one):
+        """delete by id with one wrong parameter"""
+        assert upl_one.delete_by_param(ParamsReq(id='1',
+                                                 param='test31')) == '1 files deleted'
+
+    #32
+    def test_download_by_id(self, upl_one):
+        """download by id"""
+        assert upl_one.download_by_param(ParamsReq(id='1')) == '1_name1'
+
+    #33
+    def test_download_several_by_one_id(self, upl_one):
+        """several downloads by one id"""
+        assert upl_one.download_by_param(ParamsReq(id='1')) == '1_name1'
+        assert upl_one.download_by_param(ParamsReq(id='1')) == '1_name1'
+
+    #34
+    def test_download_by_wrong_id(self, upl_one):
+        """download by wrong id"""
+        assert upl_one.download_by_param(ParamsReq(id='2')) == (404, 'файл не существует')
+
+    #35
+    def test_download_by_id_add_wrong_param(self, upl_one):
+        """download by id and wrong parameter"""
+        assert upl_one.download_by_param(ParamsReq(id='1',
+                                                   param='test35')) == '1_name1'
+
+    #36
+    def test_download_by_several_id(self, upl_one):
+        """download by several id"""
+        assert upl_one.download_by_param(ParamsReq(id=('1', '2'),
+                                                   param='test35')) == '1_name1'
+
+    #37
+    def test_download_by_id_check_content_type(self, upl_one):
+        """download by id and check content-type"""
+        result = upl_one.download_check_param(ParamsReq(id='1'))
+        assert result['Content-type'] == 'text/plain'
+
+    #38
+    def test_download_by_id_check_filename(self, upl_one):
+        """download by id and check filename"""
+        result = upl_one.download_check_param(ParamsReq(id='1'))
+        assert result['Content-Disposition'][-5:] == 'name1'
+
+    #39
+    def test_download_by_id_check_size(self, upl_one):
+        """download by id and check size"""
+        result = upl_one.download_check_param(ParamsReq(id='1'))
+        assert result['Content-length'] == '7'
 #
 #
 # class Test_ManyFilesStorage():
