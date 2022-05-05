@@ -24,6 +24,23 @@ def upl_one(fch):
     return fch
 
 
+@pytest.fixture()
+def upl_few(fch):
+    fch.upload_by_param(ParamsReq(id='1',
+                                  name='part_3_test',
+                                  tag='test1'), data='test')
+    fch.upload_by_param(ParamsReq(id='2',
+                                  name='part_3_test_1',
+                                  tag='test2'), data='test')
+    fch.upload_by_param(ParamsReq(id='3',
+                                  name='part_3_test_2',
+                                  tag='test1'), data='test')
+    fch.upload_by_param(ParamsReq(id='4',
+                                  name='part_3_test',
+                                  tag='test2'), data='test')
+    return fch
+
+
 @pytest.fixture(autouse=True)
 def clear(fch):
     result = fch.get_without_param()
@@ -573,159 +590,128 @@ class TestOneFileStorage:
         """download by id and check size"""
         result = upl_one.download_check_param(ParamsReq(id='1'))
         assert result['Content-length'] == '7'
-#
-#
-# class Test_ManyFilesStorage():
-#     """many files storage tests"""
-#
-#     @classmethod
-#     def setUpClass(cls) -> None:
-#         """setup for class"""
-#         cls.fch = ConnectorHttp('http://127.0.0.1:9876')
-#
-#     def setUp(self) -> None:
-#         """setup for tests"""
-#         self.fch.upload_by_param(ParamsReq(id='1',
-#                                            name='part_3_test',
-#                                            tag='test1'), data='test')
-#         self.fch.upload_by_param(ParamsReq(id='2',
-#                                            name='part_3_test_1',
-#                                            tag='test2'), data='test')
-#         self.fch.upload_by_param(ParamsReq(id='3',
-#                                            name='part_3_test_2',
-#                                            tag='test1'), data='test')
-#         self.fch.upload_by_param(ParamsReq(id='4',
-#                                            name='part_3_test',
-#                                            tag='test2'), data='test')
-#
-#     def tearDown(self) -> None:
-#         """teardown for tests"""
-#         result = self.fch.get_without_param()
-#         for ids in result:
-#             self.fch.delete_by_param(ParamsReq(id=ids['id']))
-#
-#     #1
-#     def test_upload_by_params(self):
-#         """upload new file by all parameters"""
-#         result = self.fch.upload_by_param(ParamsReq(id='5',
-#                                                     name='part_3_test_5',
-#                                                     tag='test5'), data='test5')
-#         self.assertCountEqual(result, REFERENCE_DICT)
-#
-#     #2
-#     def test_upload_several_files_by_same_params(self):
-#         """upload several files with the same parameters"""
-#         result = self.fch.upload_by_param(ParamsReq(id='5',
-#                                                     name='part_3_test_5',
-#                                                     tag='test5'), data='test5')
-#         self.assertCountEqual(result, REFERENCE_DICT)
-#         result = self.fch.upload_by_param(ParamsReq(id='5',
-#                                                     name='part_3_test_5',
-#                                                     tag='test5'), data='test5')
-#         self.assertCountEqual(result, REFERENCE_DICT)
-#         result = self.fch.upload_by_param(ParamsReq(id='5',
-#                                                     name='part_3_test_5',
-#                                                     tag='test5'), data='test5')
-#         self.assertCountEqual(result, REFERENCE_DICT)
-#
-#     #3
-#     def test_upload_only_playload(self):
-#         """upload file without parameters only playload"""
-#         result = self.fch.upload_by_param(ParamsReq(), data='test3')
-#         self.assertCountEqual(result, REFERENCE_DICT)
-#         self.assertEqual(result['id'], result['name'])
-#
-#     #4
-#     def test_get_without_params(self):
-#         """get without parameters"""
-#         self.assertEqual(len(self.fch.get_without_param()), 4)
-#
-#     #5
-#     def test_get_full_params(self):
-#         """get by full correctly completed parameters"""
-#         result = self.fch.get_by_param(ParamsReq(id='2',
-#                                                  name='part_3_test_1',
-#                                                  tag='test2'))
-#         self.assertCountEqual(result, REFERENCE_DICT)
-#         self.assertEqual(result['id'], '2')
-#
-#     #6
-#     def test_get_by_name_tag(self):
-#         """get by name and tag"""
-#         result = self.fch.get_by_param(ParamsReq(name='part_3_test_1',
-#                                                  tag='test2'))
-#         self.assertCountEqual(result, REFERENCE_DICT)
-#         self.assertEqual(result['id'], '2')
-#
-#     #7
-#     def test_get_files_by_name_tag(self):
-#         """get few files by name and tag"""
-#         self.fch.upload_by_param(ParamsReq(name='part_3_test_7',
-#                                            tag='test'), data='test7')
-#         self.fch.upload_by_param(ParamsReq(name='part_3_test_7',
-#                                            tag='test'), data='test7')
-#         self.fch.upload_by_param(ParamsReq(name='part_3_test_7',
-#                                            tag='test'), data='test7')
-#         self.assertEqual(len(self.fch.get_by_param(ParamsReq(name='part_3_test_7',
-#                                                              tag='test'))), 3)
-#
-#     #8
-#     def test_get_few_files_by_name_tag(self):
-#         """get few files by name and tag"""
-#         self.fch.upload_by_param(ParamsReq(id='5',
-#                                            name='part_3_test',
-#                                            tag='test1'), data='test')
-#         self.assertEqual(len(self.fch.get_by_param(ParamsReq(name='part_3_test',
-#                                                              tag='test1'))), 2)
-#
-#     #9
-#     def test_get_several_id_name(self):
-#         """get by several compound parameters id, name and one tag"""
-#         result = self.fch.get_by_param(ParamsReq(id=('1', '2', '3', '4'),
-#                                                  name=('part_3_test', 'part_3_test_1'),
-#                                                  tag='test1'))
-#         self.assertCountEqual(result, REFERENCE_DICT)
-#         self.assertEqual(result['id'], '1')
-#
-#     #10
-#     def test_get_several_id_name_tag(self):
-#         """get by several compound parameters id, name and tag"""
-#         self.assertEqual(len(self.fch.get_by_param(ParamsReq(id=('1', '2', '3', '4'),
-#                                                              name=('part_3_test',
-#                                                                    'part_3_test_1'),
-#                                                              tag=('test1', 'test2')))), 3)
-#
-#     #11
-#     def test_delete_name_tag(self):
-#         """delete by name and tag parameters"""
-#         self.fch.upload_by_param(ParamsReq(name='part_3_test_11',
-#                                            tag='test'), data='test11')
-#         self.fch.upload_by_param(ParamsReq(name='part_3_test_11',
-#                                            tag='test'), data='test11')
-#         self.fch.upload_by_param(ParamsReq(name='part_3_test_11',
-#                                            tag='test'), data='test11')
-#         self.assertEqual(self.fch.delete_by_param(ParamsReq(name='part_3_test_11',
-#                                                             tag='test')), '3 files deleted')
-#
-#     #12
-#     def test_delete_name_several_tag(self):
-#         """delete by name and several tag"""
-#         self.assertEqual(self.fch.delete_by_param(ParamsReq(name='part_3_test',
-#                                                             tag=('test1', 'test2'))),
-#                          '2 files deleted')
-#
-#     #13
-#     def test_delete_several_name_id(self):
-#         """delete by several id, name and one tag"""
-#         self.assertEqual(self.fch.delete_by_param(ParamsReq(id=('1', '2', '3', '4'),
-#                                                             name=('part_3_test', 'part_3_test_1'),
-#                                                             tag='test1')), '1 files deleted')
-#
-#     #14
-#     def test_delete_several_id_name_tag(self):
-#         """delete by several id, name and tag"""
-#         self.assertEqual(self.fch.delete_by_param(ParamsReq(id=('1', '2', '3', '4'),
-#                                                             name=('part_3_test',
-#                                                                   'part_3_test_1'),
-#                                                             tag=('test1', 'test'))),
-#                          '1 files deleted')
+
+
+class TestManyFilesStorage:
+    """many files storage tests"""
+
+    #1
+    def test_upload_by_params(self, upl_few):
+        """upload new file by all parameters"""
+        case = unittest.TestCase()
+        result = upl_few.upload_by_param(ParamsReq(id='5',
+                                                   name='part_3_test_5',
+                                                   tag='test5'), data='test5')
+        case.assertCountEqual(result, REFERENCE_DICT)
+
+    #2
+    def test_upload_several_files_by_same_params(self, upl_few):
+        """upload several files with the same parameters"""
+        case = unittest.TestCase()
+        result = upl_few.upload_by_param(ParamsReq(id='5',
+                                                   name='part_3_test_5',
+                                                   tag='test5'), data='test5')
+        case.assertCountEqual(result, REFERENCE_DICT)
+        result = upl_few.upload_by_param(ParamsReq(id='5',
+                                                   name='part_3_test_5',
+                                                   tag='test5'), data='test5')
+        case.assertCountEqual(result, REFERENCE_DICT)
+        result = upl_few.upload_by_param(ParamsReq(id='5',
+                                                   name='part_3_test_5',
+                                                   tag='test5'), data='test5')
+        case.assertCountEqual(result, REFERENCE_DICT)
+
+    #3
+    def test_upload_only_playload(self, upl_few):
+        """upload file without parameters only playload"""
+        case = unittest.TestCase()
+        result = upl_few.upload_by_param(ParamsReq(), data='test3')
+        case.assertCountEqual(result, REFERENCE_DICT)
+        assert result['id'] == result['name']
+
+    #4
+    def test_get_without_params(self, upl_few):
+        """get without parameters"""
+        assert len(upl_few.get_without_param()) == 4
+
+    #5
+    def test_get_full_params(self, upl_few):
+        """get by full correctly completed parameters"""
+        result = upl_few.get_by_param(ParamsReq(id='2',
+                                                name='part_3_test_1',
+                                                tag='test2'))
+        case = unittest.TestCase()
+        case.assertCountEqual(result, REFERENCE_DICT)
+        assert result['id'] == '2'
+
+    #6
+    def test_get_by_name_tag(self, upl_few):
+        """get by name and tag"""
+        result = upl_few.get_by_param(ParamsReq(name='part_3_test_1',
+                                                tag='test2'))
+        case = unittest.TestCase()
+        case.assertCountEqual(result, REFERENCE_DICT)
+        assert result['id'] == '2'
+
+    #7
+    def test_get_files_by_name_tag(self, upl_few):
+        """get few files by name and tag"""
+        upl_few.upload_by_param(ParamsReq(name='part_3_test_7', tag='test'), data='test7')
+        upl_few.upload_by_param(ParamsReq(name='part_3_test_7', tag='test'), data='test7')
+        upl_few.upload_by_param(ParamsReq(name='part_3_test_7', tag='test'), data='test7')
+        assert len(upl_few.get_by_param(ParamsReq(name='part_3_test_7',
+                                                  tag='test'))) == 3
+
+    #8
+    def test_get_few_files_by_name_tag(self, upl_few):
+        """get few files by name and tag"""
+        upl_few.upload_by_param(ParamsReq(id='5',
+                                          name='part_3_test',
+                                          tag='test1'), data='test')
+        assert len(upl_few.get_by_param(ParamsReq(name='part_3_test',
+                                                  tag='test1'))) == 2
+
+    #9
+    def test_get_several_id_name(self, upl_few):
+        """get by several compound parameters id, name and one tag"""
+        result = upl_few.get_by_param(ParamsReq(id=('1', '2', '3', '4'),
+                                                name=('part_3_test', 'part_3_test_1'),
+                                                tag='test1'))
+        case = unittest.TestCase()
+        case.assertCountEqual(result, REFERENCE_DICT)
+        assert result['id'] == '1'
+
+    #10
+    def test_get_several_id_name_tag(self, upl_few):
+        """get by several compound parameters id, name and tag"""
+        assert len(upl_few.get_by_param(ParamsReq(id=('1', '2', '3', '4'),
+                                                  name=('part_3_test', 'part_3_test_1'),
+                                                  tag=('test1', 'test2')))) == 3
+
+    #11
+    def test_delete_name_tag(self, upl_few):
+        """delete by name and tag parameters"""
+        upl_few.upload_by_param(ParamsReq(name='part_3_test_11', tag='test'), data='test11')
+        upl_few.upload_by_param(ParamsReq(name='part_3_test_11', tag='test'), data='test11')
+        upl_few.upload_by_param(ParamsReq(name='part_3_test_11', tag='test'), data='test11')
+        assert upl_few.delete_by_param(ParamsReq(name='part_3_test_11', tag='test')) == '3 files deleted'
+
+    #12
+    def test_delete_name_several_tag(self, upl_few):
+        """delete by name and several tag"""
+        assert upl_few.delete_by_param(ParamsReq(name='part_3_test',
+                                                 tag=('test1', 'test2'))) == '2 files deleted'
+
+    #13
+    def test_delete_several_name_id(self, upl_few):
+        """delete by several id, name and one tag"""
+        assert upl_few.delete_by_param(ParamsReq(id=('1', '2', '3', '4'),
+                                                 name=('part_3_test', 'part_3_test_1'),
+                                                 tag='test1')) == '1 files deleted'
+
+    #14
+    def test_delete_several_id_name_tag(self, upl_few):
+        """delete by several id, name and tag"""
+        assert upl_few.delete_by_param(ParamsReq(id=('1', '2', '3', '4'),
+                                                 name=('part_3_test', 'part_3_test_1'),
+                                                 tag=('test1', 'test'))) == '1 files deleted'
