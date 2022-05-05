@@ -18,62 +18,52 @@ def fch():
     return fch
 
 
-class Test_EmptyStorage():# pylint: disable=too-many-public-methods
+@pytest.fixture(autouse=True)
+def clear(fch):
+    result = fch.get_without_param()
+    if isinstance(result, dict) and len(result) > 0:
+        fch.delete_by_param(ParamsReq(id=result['id']))
+    else:
+        for part in result:
+            fch.delete_by_param(ParamsReq(id=part['id']))
+
+
+class TestEmptyStorage:
     """empty storage tests"""
 
-    @classmethod
-    def setup_class(cls) -> None:
-        """setup for class"""
-        result = fch.get_without_param()
-        if isinstance(result, dict) and len(result) > 0:
-            fch.delete_by_param(ParamsReq(id=result['id']))
-        else:
-            for part in result:
-                fch.delete_by_param(ParamsReq(id=part['id']))
-
-    @classmethod
-    def teardown_class(cls) -> None:
-        """teardown after tests"""
-        result = fch.get_without_param()
-        if isinstance(result, dict) and len(result) > 0:
-            fch.delete_by_param(ParamsReq(id=result['id']))
-        else:
-            for part in result:
-                fch.delete_by_param(ParamsReq(id=part['id']))
-
     #1
-    def test_get_without_params(self):
+    def test_get_without_params(self, fch):
         """get without parameters"""
         assert fch.get_without_param() == {}
 
     #2
-    def test_get_by_id(self):
+    def test_get_by_id(self, fch):
         """get by id"""
         assert fch.get_by_param(ParamsReq(id='2')) == {}
 
     #3
-    def test_get_by_name(self):
+    def test_get_by_name(self, fch):
         """get by name"""
         assert fch.get_by_param(ParamsReq(name='test3')) == {}
 
     #4
-    def test_get_by_tag(self):
+    def test_get_by_tag(self, fch):
         """get by tag"""
         assert fch.get_by_param(ParamsReq(tag='test')) == {}
 
     #4_1
-    def test_get_by_mimetype(self):
+    def test_get_by_mimetype(self, fch):
         """get by mimeType"""
         assert fch.get_by_param(ParamsReq(mimetype='text/plain')) == {}
 
     #4_2
-    def test_get_by_modificationtime(self):
+    def test_get_by_modificationtime(self, fch):
         """get by modificationTime"""
         assert fch.get_by_param(ParamsReq(
             modificationtime='2022-04-29 09:33:45')) == {}
 
     #5
-    def test_get_full_params(self):
+    def test_get_full_params(self, fch):
         """get by all completed parameters"""
         assert fch.get_by_param(ParamsReq(id='5',
                                           name='test5',
@@ -82,7 +72,7 @@ class Test_EmptyStorage():# pylint: disable=too-many-public-methods
                                           modificationtime='2022-04-29 09:33:45')) == {}
 
     #6
-    def test_get_full_empty_params(self):
+    def test_get_full_empty_params(self, fch):
         """get by all parameters with empty data"""
         assert fch.get_by_param(ParamsReq(id='',
                                           name='',
@@ -91,19 +81,19 @@ class Test_EmptyStorage():# pylint: disable=too-many-public-methods
                                           modificationtime='')) == {}
 
     #7
-    def test_get_several_compound_params(self):
+    def test_get_several_compound_params(self, fch):
         """get with several compound parameters"""
         assert fch.get_by_param(ParamsReq(id=('7', '7_1'),
                                           name=('test7', 'test7_1'),
                                           tag=('test', 'test1'))) == {}
 
     #8
-    def test_get_wrong_param(self):
+    def test_get_wrong_param(self, fch):
         """get by only wrong parameter"""
         assert fch.get_by_param(ParamsReq(param='test8')) == {}
 
     #9
-    def test_get_full_and_wrong_param(self):
+    def test_get_full_and_wrong_param(self, fch):
         """get by all completed parameters add wrong parameter"""
         assert fch.get_by_param(ParamsReq(id='9',
                                           name='test9',
@@ -113,38 +103,38 @@ class Test_EmptyStorage():# pylint: disable=too-many-public-methods
                                           param='test8')) == {}
 
     #10
-    def test_delete_without_params(self):
+    def test_delete_without_params(self, fch):
         """delete without parameters"""
         assert fch.delete_by_param(ParamsReq()) == (400, 'отсутствуют условия')
 
     #11
-    def test_delete_by_id(self):
+    def test_delete_by_id(self, fch):
         """delete by id"""
         assert fch.delete_by_param(ParamsReq(id='11')) == '0 files deleted'
 
     #12
-    def test_delete_by_name(self):
+    def test_delete_by_name(self, fch):
         """delete by name"""
         assert fch.delete_by_param(ParamsReq(name='test12')) == '0 files deleted'
 
     #13
-    def test_delete_by_tag(self):
+    def test_delete_by_tag(self, fch):
         """delete by tag"""
         assert fch.delete_by_param(ParamsReq(tag='test')) == '0 files deleted'
 
     #13_2
-    def test_delete_by_mimetype(self):
+    def test_delete_by_mimetype(self, fch):
         """delete by mimetype"""
         assert fch.delete_by_param(ParamsReq(mimetype='text/plain')) == '0 files deleted'
 
     #13_3
-    def test_delete_by_modificationtime(self):
+    def test_delete_by_modificationtime(self, fch):
         """delete by modification time"""
         assert fch.delete_by_param(ParamsReq(
             modificationtime='2022-04-29 09:33:45')) == '0 files deleted'
 
     #14
-    def test_delete_full_params(self):
+    def test_delete_full_params(self, fch):
         """delete by all completed parameters"""
         assert fch.delete_by_param(ParamsReq(id='14',
                                              name='test14',
@@ -153,7 +143,7 @@ class Test_EmptyStorage():# pylint: disable=too-many-public-methods
                                              modificationtime='2022-04-29 09:33:45')) == '0 files deleted'
 
     #15
-    def test_delete_full_empty_params(self):
+    def test_delete_full_empty_params(self, fch):
         """delete by all parameters with empty data"""
         assert fch.delete_by_param(ParamsReq(id='',
                                              name='',
@@ -162,19 +152,19 @@ class Test_EmptyStorage():# pylint: disable=too-many-public-methods
                                              modificationtime='')) == (400, 'отсутствуют условия')
 
     #16
-    def test_delete_several_compound_params(self):
+    def test_delete_several_compound_params(self, fch):
         """delete by several compound parameters"""
         assert fch.delete_by_param(ParamsReq(id=('7', '7_1'),
                                              name=('test7', 'test7_1'),
                                              tag=('test', 'test1'))) == '0 files deleted'
 
     #17
-    def test_delete_only_wrong_param(self):
+    def test_delete_only_wrong_param(self, fch):
         """delete by only one wrong parameter"""
         assert fch.delete_by_param(ParamsReq(param='test17')) == (400, 'отсутствуют условия')
 
     #18
-    def test_delete_full_add_wrong_params(self):
+    def test_delete_full_add_wrong_params(self, fch):
         """delete by all completed parameters add one wrong parameter"""
         assert fch.delete_by_param(ParamsReq(id='18',
                                              name='test18',
@@ -184,46 +174,46 @@ class Test_EmptyStorage():# pylint: disable=too-many-public-methods
                                              param='test18')) == '0 files deleted'
 
     #19
-    def test_download_without_params(self):
+    def test_download_without_params(self, fch):
         """download without parameters"""
         assert fch.download_without_param() == (400, 'отсутствуют условия')
 
     #20
-    def test_download_by_id(self):
+    def test_download_by_id(self, fch):
         """download by id"""
         assert fch.download_by_param(ParamsReq(id='20')) == (404, 'файл не существует')
 
     #21
-    def test_download_by_several_id(self):
+    def test_download_by_several_id(self, fch):
         """download by several id"""
         assert fch.download_by_param(ParamsReq(id=('21', '21_2'))) == (404, 'файл не существует')
 
     #22
-    def test_download_wrong_param(self):
+    def test_download_wrong_param(self, fch):
         """download by one wrong parameter"""
         assert fch.download_by_param(ParamsReq(param='test22')) == (400, 'отсутствуют условия')
 
     #23
-    def test_download_by_id_and_wrong_param(self):
+    def test_download_by_id_and_wrong_param(self, fch):
         """download by id and wrong parameter"""
         assert fch.download_by_param(ParamsReq(id='23',
                                                param='test23')) == (404, 'файл не существует')
 
     #24
-    def test_upload_without_param(self):
+    def test_upload_without_param(self, fch):
         """upload without parameters"""
         case = unittest.TestCase()
         case.assertCountEqual(fch.upload_by_param(ParamsReq(), data='test24'),
                               REFERENCE_DICT)
 
     #25
-    def test_upload_by_name(self):
+    def test_upload_by_name(self, fch):
         """upload by name"""
         assert fch.upload_by_param(ParamsReq(name='test25'),
                                    data='test25')['name'] == 'test25'
 
     #26
-    def test_upload_by_id_name(self):
+    def test_upload_by_id_name(self, fch):
         """upload by id and name"""
         result = fch.upload_by_param(ParamsReq(id='26',
                                                name='test26'),
@@ -232,7 +222,7 @@ class Test_EmptyStorage():# pylint: disable=too-many-public-methods
         assert result['name'] == 'test26'
 
     #27
-    def test_upload_by_id_name_tag(self):
+    def test_upload_by_id_name_tag(self, fch):
         """upload by id, name, tag"""
         result = fch.upload_by_param(ParamsReq(id='27',
                                                name='test27',
@@ -243,20 +233,20 @@ class Test_EmptyStorage():# pylint: disable=too-many-public-methods
         assert result['tag'] == 'test'
 
     #28
-    def test_upload_by_id(self):
+    def test_upload_by_id(self, fch):
         """upload by id"""
         result = fch.upload_by_param(ParamsReq(id='28'),
                                      data='test28')
         assert result['id'] == result['name']
 
     #29
-    def test_upload_without_param_data(self):
+    def test_upload_without_param_data(self, fch):
         """upload without parameters and playload"""
         case = unittest.TestCase()
         case.assertCountEqual(fch.upload_by_param(ParamsReq()), REFERENCE_DICT)
 
     #30
-    def test_upload_full_param_add_wrong_param(self):
+    def test_upload_full_param_add_wrong_param(self, fch):
         """upload all completed parameters add one wrong parameter"""
         case = unittest.TestCase()
         case.assertCountEqual(fch.upload_by_param(ParamsReq(id='30',
@@ -266,28 +256,28 @@ class Test_EmptyStorage():# pylint: disable=too-many-public-methods
                                                   data='test30'), REFERENCE_DICT)
 
     #30_2
-    def test_upload_with_only_wrong_param(self):
+    def test_upload_with_only_wrong_param(self, fch):
         """upload with only one wrong parameter"""
         case = unittest.TestCase()
         case.assertCountEqual(fch.upload_by_param(ParamsReq(param='test30_2')),
                               REFERENCE_DICT)
 
     #31
-    def test_upload_several_id(self):
+    def test_upload_several_id(self, fch):
         """upload with several id"""
         result = fch.upload_by_param(ParamsReq(id=('31', '31_2')),
                                      data='test31')
         assert result['id'] == '31'
 
     #32
-    def test_upload_several_name(self):
+    def test_upload_several_name(self, fch):
         """upload with several name"""
         result = fch.upload_by_param(ParamsReq(name=('test32', 'test32_2')),
                                      data='test32')
         assert result['name'] == 'test32'
 
     #33
-    def test_upload_several_tag(self):
+    def test_upload_several_tag(self, fch):
         """upload with several tag"""
         result = fch.upload_by_param(ParamsReq(tag=('test33', 'test33_2')),
                                      data='test33')
