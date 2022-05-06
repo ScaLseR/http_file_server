@@ -1,30 +1,34 @@
+"""fixtures"""
 import pytest
+from http_connector import ConnectorHttp, ParamsReq
 
 
-@pytest.fixture()
+@pytest.fixture(scope="function")
 def fch():
-    from http_connector import ConnectorHttp
+    """connection to http server"""
     fch = ConnectorHttp('http://127.0.0.1:9876')
     return fch
 
 
-@pytest.fixture()
+@pytest.fixture(scope="function")
 def params():
-    from http_connector import ParamsReq
+    """created data class for parameters to requests"""
     params = ParamsReq
     return params
 
 
-@pytest.fixture()
+@pytest.fixture(scope="function")
 def upl_one(fch, params):
+    """upload one file to base"""
     fch.upload_by_param(params(id='1',
                                   name='name1',
                                   tag='test'), data='1_name1')
     return fch
 
 
-@pytest.fixture()
+@pytest.fixture(scope="function")
 def upl_few(fch, params):
+    """upload few files to base"""
     fch.upload_by_param(params(id='1',
                                   name='part_3_test',
                                   tag='test1'), data='test')
@@ -42,6 +46,7 @@ def upl_few(fch, params):
 
 @pytest.fixture(autouse=True)
 def clear(fch, params):
+    """clear all files from base before and after test"""
     result = fch.get_without_param()
     if isinstance(result, dict) and len(result) > 0:
         fch.delete_by_param(params(id=result['id']))

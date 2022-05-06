@@ -158,7 +158,8 @@ class TestEmptyStorage:
                                           name='test14',
                                           tag='test',
                                           mimetype='text/plain',
-                                          modificationtime='2022-04-29 09:33:45')) == '0 files deleted'
+                                          modificationtime='2022-04-29 09:33:45')
+                                   ) == '0 files deleted'
 
     #15
     @pytest.mark.delete
