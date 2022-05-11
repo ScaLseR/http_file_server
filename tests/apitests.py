@@ -326,7 +326,7 @@ class OneFileStorageTests(TestCase):# pylint: disable=too-many-public-methods
 
     #2
     def test_upload_id_name_change_tag(self):
-        """change tag when loading an existing id with a new tag"""
+        """change name and tag when loading an existing id with a new tag and name"""
         result = self.fch.upload_by_param(ParamsReq(id='1',
                                                     name='name2',
                                                     tag='test2'))
