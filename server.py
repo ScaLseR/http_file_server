@@ -51,13 +51,14 @@ class ApiEndpoint(BaseHTTPRequestHandler):
                 #если есть параметры то делаем запрос в базу
                 rez = ApiEndpoint._storage.load_from_db(params)
             rez_list = self._create_dict(rez)
-            if len(rez_list) == 1:
-                rez_json = dumps(rez_list[0])
-            else:
-                rez_json = dumps(rez_list)
+            # if len(rez_list) == 1:
+            #     rez_json = dumps(rez_list[0])
+            # else:
+            #     rez_json = dumps(rez_list)
             self._set_headers(200)
-            if len(rez_json) == 2:
-                rez_json = dumps({})
+            # if len(rez_json) == 2:
+            #     rez_json = dumps({})
+            rez_json = dumps(rez_list)
             self.wfile.write(rez_json.encode('utf-8'))
         # обрабатываем api/download
         elif self.path.startswith('/api/download'):
