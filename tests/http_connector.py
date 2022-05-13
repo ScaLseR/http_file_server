@@ -7,7 +7,7 @@ from requests import request
 @dataclass
 class ParamsReq:
     """structure for requests parameters """
-    id: any = ''
+    id: any = ''#pylint: disable = invalid-name
     tag: any = ''
     name: any = ''
     size: any = ''
