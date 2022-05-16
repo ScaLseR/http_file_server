@@ -586,7 +586,7 @@ class OneFileStorageTests(TestCase):# pylint: disable=too-many-public-methods
     def test_download_by_id_check_content_type(self):
         """download by id and check content-type"""
         result = self.fch.download_check_param(ParamsReq(id='1'))
-        self.assertMultiLineEqual(result['Content-type'], 'text/plain')
+        self.assertMultiLineEqual(result['Content-Type'], 'text/plain')
 
     #38
     def test_download_by_id_check_filename(self):
@@ -598,7 +598,7 @@ class OneFileStorageTests(TestCase):# pylint: disable=too-many-public-methods
     def test_download_by_id_check_size(self):
         """download by id and check size"""
         result = self.fch.download_check_param(ParamsReq(id='1'))
-        self.assertMultiLineEqual(result['Content-length'], '7')
+        self.assertEqual(result['Content-length'], '7')
 
 
 class ManyFilesStorageTests(TestCase):

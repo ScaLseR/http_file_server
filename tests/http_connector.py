@@ -66,9 +66,8 @@ class ConnectorHttp:
         """download check wile output parameters"""
         return self._download(params.to_dict()).headers
 
-    def get_without_param(self):
-        """get without parameters"""
-        rez = loads(self._get().content.decode('utf-8'))
+    @staticmethod
+    def _unpack(rez):
         if len(rez) == 0:
             rez_json = {}
         elif len(rez) == 1:
@@ -77,17 +76,14 @@ class ConnectorHttp:
             rez_json = rez
         return rez_json
 
+    def get_without_param(self):
+        """get without parameters"""
+        return self._unpack(loads(self._get().content.decode('utf-8')))
+
     def get_by_param(self, params: ParamsReq):
         """get file by parameters"""
         response = self._get(params.to_dict())
-        rez = loads(response.content.decode('utf-8'))
-        if len(rez) == 0:
-            rez_json = {}
-        elif len(rez) == 1:
-            rez_json = rez[0]
-        else:
-            rez_json = rez
-        return rez_json
+        return self._unpack(loads(response.content.decode('utf-8')))
 
     def delete_by_param(self, params: ParamsReq):
         """delete file by parameters"""
