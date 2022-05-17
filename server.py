@@ -155,7 +155,7 @@ class ApiEndpoint(BaseHTTPRequestHandler):
             else:
                 rez = ApiEndpoint._storage.load_from_db(params)
                 if len(rez) == 0:
-                    self._set_headers(200, '0 files deleted')
+                    self._set_headers(200)
                     self.wfile.write('0 files deleted'.encode('utf-8'))
                 else:
                     count = 0
@@ -163,7 +163,7 @@ class ApiEndpoint(BaseHTTPRequestHandler):
                         ApiEndpoint._storage.del_from_db(id=part[0])
                         delete_file_from_disk(part[0])
                         count += 1
-                    self._set_headers(200, str(count) + ' files deleted')
+                    self._set_headers(200)
                     self.wfile.write((str(count) + ' files deleted').encode('utf-8'))
         else:
             self._set_headers(501)

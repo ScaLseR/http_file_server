@@ -68,6 +68,7 @@ class ConnectorHttp:
 
     @staticmethod
     def _unpack(rez):
+        """unpack and return"""
         if len(rez) == 0:
             rez_json = {}
         elif len(rez) == 1:
