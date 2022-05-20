@@ -45,7 +45,7 @@ class ApiEndpoint(BaseHTTPRequestHandler):
             # если нет параметров то выводим все файлы
             if len(params) == 0 or ('id' not in params) and ('name' not in params) \
                     and ('tag' not in params) and ('mimetype' not in params) \
-                    and ('modificationtime' not in params):
+                    and ('modificationtime' not in params) and ('size' not in params):
                 rez = ApiEndpoint._storage.load_from_db({})
             else:
                 #если есть параметры то делаем запрос в базу
